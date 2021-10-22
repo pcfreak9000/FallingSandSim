@@ -1,11 +1,13 @@
 package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 
 public class ElementWater extends Element {
     public ElementWater() {
         this.density = 2;
+        this.c = Color.BLUE;
     }
     
     @Override
@@ -18,57 +20,76 @@ public class ElementWater extends Element {
         //            mat.switchStates(state.x, state.y, state.x, state.y - 1);
         //        }
         Vector2 vel = state.getVelocity();
-        vel.add(0f, -4.0f);
+        vel.add(0f, -40.0f);
+        applyFriction(state, mat);
         int x1 = (int) (state.x + Gdx.graphics.getDeltaTime() * vel.x);
         int y1 = (int) (state.y + Gdx.graphics.getDeltaTime() * vel.y);
         bresenham(state.x, state.y, x1, y1, mat, state);
     }
     
-    private void bresenham(int x0, int y0, int x1, int y1, ElementMatrix mat, ElementState state) {
-        int dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-        int dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-        int err = dx + dy, e2; /* error value e_xy */
-        int ox = x0;
-        int oy = y0;
-        while (true) {
-            if (ox != x0 || oy != y0) {
-//                if (mat.checkBounds(x0, y0)
-//                        && (!mat.hasElement(x0, y0) || mat.getState(x0, y0).getElement().density < this.density)) {//somewhere apply archimedes force
-//                    mat.switchStates(state.x, state.y, x0, y0);
-//                } else {
-//                    float f = state.getVelocity().len();
-//                    double angle = Math.atan2(state.getVelocity().y, state.getVelocity().x);
-//                    Direction d = Direction.ofAngle(angle);
-//                    if (d == Direction.Up || d == Direction.Down) {
-//                        Direction mov = Math.random() > 0.5 ? d.orth0() : d.orth1();
-//                        //TODO check the direction
-//                        state.getVelocity().set(f * mov.dx * 1, f * mov.dy * 1);
-//                    }else {
-//                        state.getVelocity().set(0, 0);
-//                    }
-//                    //                    int xdif = x0 - ox;
-//                    //                    int ydif = y0 - oy;
-//                    //                    if (ydif >= xdif) {
-//                    //                        
-//                    //                    } else {
-//                    //                        
-//                    //                    }
-//                    //TODO: spread in random direction?
-//                    break;
-//                }
+    private void applyFriction(ElementState state, ElementMatrix mat) {
+        float friction = 0;
+        if (state.getFriction() != 0) {
+            for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
+                int dx = state.getX() + d.dx;
+                int dy = state.getY() + d.dy;
+                if (mat.checkBounds(dx, dy)) {
+                    float otherfriction = mat.getState(dx, dy).getFriction();
+                    friction += otherfriction * state.getFriction();
+                }
             }
-            if (x0 == x1 && y0 == y1) {
+            friction = friction / 3;
+        }
+        state.getVelocity().scl(1 - friction);
+    }
+    
+    //get how much time there is to move (frame + time fraction from last frame)
+    //calculate direction to move in
+    //calculate the next move (check if there is an obstacle and the direction needs to change or find out with bresenham the next line tile)
+    //check if there is enough time to do that move (if not, accumulate the left over time fraction). use an effective velocity in which friction is accounted for 
+    //if enough time, do that move and subtract the needed time and apply the friction for that move, then go to step 3 
+    
+    private void bresenham(int startX, int startY, int destX, int destY, ElementMatrix mat, ElementState state) {
+        int dx = Math.abs(destX - startX), sx = startX < destX ? 1 : -1;
+        int dy = -Math.abs(destY - startY), sy = startY < destY ? 1 : -1;
+        int err = dx + dy, e2; /* error value e_xy */
+        int x = startX;
+        int y = startY;
+        while (true) {
+            if (startX != x || startY != y) {
+                if (mat.checkBounds(x, y)) {
+                    ElementState next = mat.getState(x, y);
+                    boolean stopped = movement(mat, state, next);
+                    if (stopped) {
+                        break;
+                    }
+                }
+            }
+            if (x == destX && y == destY) {
+                //destination reached
                 break;
             }
             e2 = 2 * err;
             if (e2 > dy) {
                 err += dy;
-                x0 += sx;
-            } /* e_xy+e_x > 0 */
+                x += sx;
+            }
             if (e2 < dx) {
                 err += dx;
-                y0 += sy;
-            } /* e_xy+e_y < 0 */
+                y += sy;
+            }
         }
+    }
+    
+    private boolean movement(ElementMatrix mat, ElementState state, ElementState next) {
+        if (next.getElement().density <= state.getElement().density && !next.getElement().isFixed) {
+            mat.switchStates(state, next);
+            return false;
+        } else {
+            //state.getVelocity().set(
+            //         state.getVelocity().x + (mat.random() > 0.5 ? 1 : -1) * Math.abs(state.getVelocity().y) * 0.8f, 0);
+            return true;
+        }
+        //return true;
     }
 }

@@ -63,10 +63,20 @@ public class ElementMatrix {
         return random.nextDouble();
     }
     
+    public void switchStates(ElementState s0, ElementState s1) {
+        if (s0 == s1) {
+            return;
+        }
+        switchStates(s0.x, s0.y, s1.x, s1.y);
+    }
+    
     public void switchStates(int x0, int y0, int x1, int y1) {
         ElementState s0 = matrix[x0][y0];
         ElementState s1 = matrix[x1][y1];
         if (s0.x != x0 || s0.y != y0 || s1.x != x1 || s1.y != y1) {
+            throw new RuntimeException();
+        }
+        if (s0.getElement().isFixed || s1.getElement().isFixed) {
             throw new RuntimeException();
         }
         matrix[x0][y0] = s1;

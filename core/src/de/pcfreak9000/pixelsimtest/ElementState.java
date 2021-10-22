@@ -16,7 +16,7 @@ public class ElementState {
         this.x = x;
         this.y = y;
         this.element = element;
-        this.color = Color.WHITE;
+        this.color = element.c;
         this.velocity = new Vector2();
     }
     
@@ -42,5 +42,9 @@ public class ElementState {
     
     public int getY() {
         return y;
+    }
+    
+    public float getFriction() {
+        return 0;
     }
 }
