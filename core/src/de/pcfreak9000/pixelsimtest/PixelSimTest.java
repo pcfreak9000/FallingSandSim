@@ -1,7 +1,6 @@
 package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -12,33 +11,29 @@ public class PixelSimTest extends ApplicationAdapter {
     private ElementMatrix mat;
     private Viewport vp;
     
-    private Element water;
-    private Element gravel;
-    private Element gas;
+    private Element air;
     private Element stone;
+    private Element water;
     
     @Override
     public void create() {
         batch = new SpriteBatch();
         vp = new FitViewport(ElementMatrix.SIZE, ElementMatrix.SIZE);
         setupElements();
-        mat = new ElementMatrix();
-        mat.setCircle(120, 120, 30, water);
-        mat.setCircle(0, 0, 20, gas);
-        mat.setCircle(0, 99, 20, gravel);
-        mat.setCircle(50, 50, 30, stone);
-        for(int i=0; i<110; i++) {
-            //mat.setElement(i+20, 50, stone);
+        mat = new ElementMatrix(air);
+        mat.createCircle(120, 120, 30, water);
+        //        mat.createCircle(0, 0, 20, gas);
+        //        mat.createCircle(0, 99, 20, gravel);
+        //        mat.createCircle(50, 50, 30, stone);
+        for (int i = 0; i < 110; i++) {
+            mat.createState(i + 20, 50, stone);
         }
     }
     
     private void setupElements() {
-        water = new Water();
-        gravel = new Gravel();
-        gas = new Gas();
-        stone = new Element();
-        stone.setColor(Color.DARK_GRAY);
-        stone.isFixed = true;
+        air = new ElementAir();
+        stone = new ElementStone();
+        water = new ElementWater();
     }
     
     @Override
