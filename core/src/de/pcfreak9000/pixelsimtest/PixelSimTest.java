@@ -24,12 +24,16 @@ public class PixelSimTest extends ApplicationAdapter {
         vp = new FitViewport(ElementMatrix.SIZE, ElementMatrix.SIZE);
         setupElements();
         mat = new ElementMatrix(air);
-        //mat.createCircle(120, 120, 30, water);
+        // mat.createCircle(120, 120, 30, water);
         //        mat.createCircle(0, 0, 20, gas);
         //        mat.createCircle(0, 99, 20, gravel);
-        //        mat.createCircle(50, 50, 30, stone);
+        
+        //mat.createCircle(50, 50, 30, stone);
         for (int i = 0; i < 110; i++) {
             mat.createState(i + 20, 50, stone);
+        }
+        for (int i = 0; i < ElementMatrix.SIZE; i++) {
+            mat.createState(i, 0, stone);
         }
     }
     
@@ -41,15 +45,13 @@ public class PixelSimTest extends ApplicationAdapter {
     
     @Override
     public void render() {
-        if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
+        if (Gdx.input.isButtonPressed(Buttons.LEFT) || Gdx.input.isButtonPressed(Buttons.RIGHT)) {
             int x = Gdx.input.getX();
             int y = Gdx.input.getY();
             Vector2 vec = vp.unproject(new Vector2(x, y));
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
-            if (mat.checkBounds(ax, ay) && !mat.hasElement(ax, ay)) {
-                mat.createState(ax, ay, water);
-            }
+            mat.createCircle(ax, ay, 5, Gdx.input.isButtonPressed(Buttons.LEFT) ? water : stone);
         }
         for (int i = 0; i < 1; i++) {
             mat.update();

@@ -12,6 +12,8 @@ public class ElementState {
     //possibly move that into a subclass?
     private Vector2 velocity;
     
+    public float ahyes;
+    
     public ElementState(int x, int y, Element element) {
         this.x = x;
         this.y = y;
@@ -45,6 +47,6 @@ public class ElementState {
     }
     
     public float getFriction() {
-        return 0;
+        return element.getFriction();
     }
 }

@@ -16,4 +16,8 @@ public abstract class Element {
     public ElementState createElementState(int x, int y) {
         return new ElementState(x, y, this);
     }
+
+    public float getFriction() {
+        return 0;
+    }
 }

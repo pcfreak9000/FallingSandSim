@@ -8,4 +8,9 @@ public class ElementStone extends Element {
         this.density = 10;
         this.c = Color.GRAY;
     }
+    
+    @Override
+    public float getFriction() {
+        return 0.6f;
+    }
 }

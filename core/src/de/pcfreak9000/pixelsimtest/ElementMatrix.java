@@ -23,7 +23,7 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
-    public static final int SIZE = 150;
+    public static final int SIZE = 200;
     
     private ElementState[][] matrix = new ElementState[SIZE][SIZE];
     private Array<ElementState> activeStates = new Array<>();
@@ -117,7 +117,7 @@ public class ElementMatrix {
                 int ax = x + i;
                 int ay = y + j;
                 if (i * i + j * j < radius * radius) {
-                    if (checkBounds(ax, ay)) {
+                    if (checkBounds(ax, ay) && !hasElement(ax, ay)) {
                         createState(ax, ay, e);
                     }
                 }
