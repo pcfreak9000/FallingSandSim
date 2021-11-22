@@ -17,6 +17,7 @@ public class PixelSimTest extends ApplicationAdapter {
     private Element air;
     private Element stone;
     private Element water;
+    private Element sand;
     
     @Override
     public void create() {
@@ -41,6 +42,7 @@ public class PixelSimTest extends ApplicationAdapter {
         air = new ElementAir();
         stone = new ElementStone();
         water = new ElementWater();
+        sand = new ElementSand();
     }
     
     @Override
@@ -51,7 +53,7 @@ public class PixelSimTest extends ApplicationAdapter {
             Vector2 vec = vp.unproject(new Vector2(x, y));
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
-            mat.createCircle(ax, ay, 5, Gdx.input.isButtonPressed(Buttons.LEFT) ? water : stone);
+            mat.createCircle(ax, ay, 15, Gdx.input.isButtonPressed(Buttons.LEFT) ? water : sand);
         }
         for (int i = 0; i < 1; i++) {
             mat.update();

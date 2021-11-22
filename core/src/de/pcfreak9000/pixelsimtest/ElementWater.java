@@ -2,11 +2,12 @@ package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public class ElementWater extends Element {
     public ElementWater() {
-        this.density = 2;
+        this.density = 20000;
         this.c = Color.BLUE;
     }
     
@@ -145,18 +146,37 @@ public class ElementWater extends Element {
     }
     
     private boolean movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
-        if (next != null && next.getElement().density <= state.getElement().density && !next.getElement().isFixed) {
+        //        if (next != null && next.getElement().density == 1) {
+        //            mat.switchStates(state, next);
+        //            return false;
+        //        } else {
+        //            Vector2 vel = state.getVelocity();
+        //            float f = vel.x * dir.dx + vel.y * dir.dy;
+        //            f *= 1.5f;
+        //            vel = vel.sub(f * dir.dx, f * dir.dy);
+        //        }
+        //        return true;
+        float densityDiff = next == null ? -state.getElement().density
+                : next.getElement().density - state.getElement().density;
+        // densityDiff = MathUtils.clamp(densityDiff, -3, 3);
+        float diversion = densityDiff / 3 + 0.5f;
+        diversion = MathUtils.clamp(diversion, 0, 1);
+        if (next != null && next.getElement().density == 0) {
+            diversion = 1;
+        }
+        if (next != null && densityDiff < 0 && !next.getElement().isFixed) {
             mat.switchStates(state, next);
             return false;
         } else {
-            //            if (mat.random() < 0.05) {
-            //                state.getVelocity().scl(-0.5f);
-            //                return true;
-            //            }
             Direction d;
-            Vector2 mov = new Vector2(dir.dx * state.getVelocity().x, dir.dy * state.getVelocity().y);
+            Vector2 v = state.getVelocity();
+            float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && state.getVelocity().x == 0) || (dir.dy == 0 && state.getVelocity().y == 0)) {
-                d = mat.random() > 0.5 ? dir.orth0() : dir.orth1();
+                if (dir.dy == 0) {
+                    d = Direction.Down;
+                } else {
+                    d = mat.random() > 0.5 ? dir.orth0() : dir.orth1();
+                }
             } else {
                 if (dir.dx == 0) {
                     d = state.getVelocity().x > 0 ? Direction.Right : Direction.Left;
@@ -166,24 +186,32 @@ public class ElementWater extends Element {
                     throw new IllegalStateException();
                 }
             }
-            //v-(v dot n)*n
-            Vector2 v = state.getVelocity();
             if (dir.dx != 0) {
                 v.x = 0;
             } else if (dir.dy != 0) {
                 v.y = 0;
             }
-            float f = mov.x + mov.y;
-            //f *= 0.5f;
             if (d.dx != 0) {
                 v.x = d.dx * f;
             } else if (d.dy != 0) {
                 v.y = d.dy * f;
             }
-            // state.getVelocity().clamp(-2000, 2000);
             return true;
         }
+        
         //return true;
+    }
+    
+    public void collisionResponse(float e, float ma, float mb, Vector2 Vai, Vector2 Vbi) {
+        float k = 1 / (ma * ma) + 2 / (ma * mb) + 1 / (mb * mb);
+        float Jx = (e + 1) / k * (Vai.x - Vbi.x) * (1 / ma + 1 / mb) - (e + 1) / k * (Vai.y - Vbi.y);
+        float Jy = -(e + 1) / k * (Vai.x - Vbi.x) + (e + 1) / k * (Vai.y - Vbi.y) * (1 / ma + 1 / mb);
+        Vai.x = Vai.x - Jx / ma;
+        Vai.y = Vai.y - Jy / ma;
+        Vbi.x = Vbi.x - Jx / mb;
+        Vbi.y = Vbi.y - Jy / mb;
+        Vai.clamp(-10, 10);
+        Vbi.clamp(-10, 10);
     }
     
     @Override
