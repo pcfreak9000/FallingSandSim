@@ -47,7 +47,7 @@ public class PixelSimTest extends ApplicationAdapter {
     
     @Override
     public void render() {
-        if (Gdx.input.isButtonPressed(Buttons.LEFT) || Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+        if (Gdx.input.isButtonJustPressed(Buttons.LEFT) || Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
             int x = Gdx.input.getX();
             int y = Gdx.input.getY();
             Vector2 vec = vp.unproject(new Vector2(x, y));

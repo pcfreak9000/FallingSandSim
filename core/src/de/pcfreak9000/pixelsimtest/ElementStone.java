@@ -11,6 +11,6 @@ public class ElementStone extends Element {
     
     @Override
     public float getFriction() {
-        return 0.6f;
+        return 1f;
     }
 }

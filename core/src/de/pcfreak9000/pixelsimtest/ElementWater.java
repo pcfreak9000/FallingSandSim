@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ElementWater extends Element {
     public ElementWater() {
-        this.density = 20000;
+        this.density = 1.1f;
         this.c = Color.BLUE;
     }
     
@@ -21,7 +21,13 @@ public class ElementWater extends Element {
         //            mat.switchStates(state.x, state.y, state.x, state.y - 1);
         //        }
         Vector2 vel = state.getVelocity();
-        vel.add(0f, -40.0f);
+        //                if (mat.checkBounds(state.x, state.y + 1)) {
+        //                    float dens = mat.getState(state.x, state.y + 1).getElement().density;
+        //                    if (dens > state.getElement().density) {
+        //                        vel.add(0, 40f * dens / state.getElement().density);
+        //                    }
+        //                }
+        vel.add(0f, state.getElement().density < 1 ? 40f : -40.0f);
         float value = state.ahyes + Gdx.graphics.getDeltaTime();
         // int i = 0;
         for (int i = 0; i < 10; i++) {
@@ -156,6 +162,7 @@ public class ElementWater extends Element {
         //            vel = vel.sub(f * dir.dx, f * dir.dy);
         //        }
         //        return true;
+        float dens = state.getElement().density;
         float densityDiff = next == null ? -state.getElement().density
                 : next.getElement().density - state.getElement().density;
         // densityDiff = MathUtils.clamp(densityDiff, -3, 3);
@@ -164,7 +171,8 @@ public class ElementWater extends Element {
         if (next != null && next.getElement().density == 0) {
             diversion = 1;
         }
-        if (next != null && densityDiff < 0 && !next.getElement().isFixed) {
+        boolean b = (densityDiff < 0 && dens > 1) || (densityDiff > 0 && dens < 1);
+        if (next != null && b && !next.getElement().isFixed) {
             mat.switchStates(state, next);
             return false;
         } else {
@@ -173,7 +181,7 @@ public class ElementWater extends Element {
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && state.getVelocity().x == 0) || (dir.dy == 0 && state.getVelocity().y == 0)) {
                 if (dir.dy == 0) {
-                    d = Direction.Down;
+                    d = dens > 1 ? Direction.Down : Direction.Up;
                 } else {
                     d = mat.random() > 0.5 ? dir.orth0() : dir.orth1();
                 }

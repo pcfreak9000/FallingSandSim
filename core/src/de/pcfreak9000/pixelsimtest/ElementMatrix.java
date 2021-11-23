@@ -23,12 +23,13 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
-    public static final int SIZE = 200;
+    public static final int SIZE = 300;
     
     private ElementState[][] matrix = new ElementState[SIZE][SIZE];
     private Array<ElementState> activeStates = new Array<>();
     
     private List<Integer> indizes = new ArrayList<>();
+    private List<Integer> indizes2 = new ArrayList<>();
     
     private Element base;
     
@@ -41,6 +42,10 @@ public class ElementMatrix {
         }
         Collections.shuffle(indizes);
         for (int i = 0; i < SIZE; i++) {
+            indizes2.add(i);
+        }
+        Collections.shuffle(indizes2);
+        for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 matrix[i][j] = base.createElementState(i, j);
             }
@@ -49,7 +54,8 @@ public class ElementMatrix {
     
     public void update() {
         //Collections.shuffle(indizes);
-        for (int j = 0; j < SIZE; j++) {
+        //Collections.shuffle(indizes2);
+        for (int j : indizes2) {
             for (int i : indizes) {
                 ElementState t = matrix[i][j];
                 if (t != null) {
