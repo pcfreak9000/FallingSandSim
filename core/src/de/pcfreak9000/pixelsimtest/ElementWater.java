@@ -11,50 +11,104 @@ public class ElementWater extends Element {
         this.c = Color.BLUE;
     }
     
+    private float getBuoyancyAccel(ElementMatrix mat, ElementState state, float g) {
+        int x = state.x;
+        int y = state.y;
+        //        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
+        //            return g * mat.getState(x, y + 1).getElement().density / state.getElement().density;
+        //        }
+        //        return 0;
+        float accel = 0;
+        int f = 0;
+        Direction[] ds = { Direction.Down, Direction.Up };//{ Direction.Left, Direction.Right, Direction.Up };
+        for (Direction d : ds) {
+            int ax = x + d.dx;
+            int ay = y + d.dy;
+            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).getElement().isFixed) {
+                accel += mat.getState(ax, ay).getElement().density;
+                f += 1;
+            }
+        }//FIXME buoyancy
+        if (f == 0) {
+            return 0;
+        }
+        accel = g * accel / state.getElement().density * 1f / f;
+        return 0;
+    }
+    //TODO consider testing a from bot to top update strategy?
+    @Override
+    public void applyForces(ElementState state, ElementMatrix mat) {
+        Vector2 vel = state.getVelocity();
+        Vector2 acl = state.getAcceleration();
+        float g = 40;
+        acl.add(0, -g + getBuoyancyAccel(mat, state, g));
+        if (acl.y > 0) {
+            //TODO normal forces etc
+        }
+        vel.add(acl);
+        //die überprüfungen ob beschleunigt werden soll müssen verändert werden
+        //        if (state.getElement().density < 1) {
+        //            if (mat.checkBounds(state.x, state.y + 1) && !mat.hasElement(state.x, state.y + 1)) {
+        //                vel.add(0, 40f);
+        //            }
+        //        } else {
+        //            if (mat.checkBounds(state.x, state.y - 1) && !mat.hasElement(state.x, state.y - 1)) {
+        //                vel.add(0, -40f);
+        //            }
+        //        }
+        acl.set(0, 0);
+    }
+    
     @Override
     public void update(ElementState state, ElementMatrix mat) {
-        //        if(!mat.checkBounds(state.getX(), state.getY()-1)) {
-        //            return;
-        //        }
-        //        ElementState below = mat.getState(state.getX(), state.getY() - 1);
-        //        if (!mat.hasElement(state.x, state.y - 1) && below.getElement().density < this.density) {
-        //            mat.switchStates(state.x, state.y, state.x, state.y - 1);
-        //        }
         Vector2 vel = state.getVelocity();
-        //                if (mat.checkBounds(state.x, state.y + 1)) {
-        //                    float dens = mat.getState(state.x, state.y + 1).getElement().density;
-        //                    if (dens > state.getElement().density) {
-        //                        vel.add(0, 40f * dens / state.getElement().density);
-        //                    }
-        //                }
-        vel.add(0f, state.getElement().density < 1 ? 40f : -40.0f);
-        float value = state.ahyes + Gdx.graphics.getDeltaTime();
-        // int i = 0;
-        for (int i = 0; i < 10; i++) {
+        Vector2 acl = state.getAcceleration();
+        float g = 40;
+        // acl.add(0, -g + getBuoyancyAccel(mat, state, g));
+        if (acl.y > 0) {
+            
+        }
+        // vel.add(acl);
+        //die überprüfungen ob beschleunigt werden soll müssen verändert werden
+        //        if (state.getElement().density < 1) {
+        //            if (mat.checkBounds(state.x, state.y + 1) && !mat.hasElement(state.x, state.y + 1)) {
+        //                vel.add(0, 40f);
+        //            }
+        //        } else {
+        //            if (mat.checkBounds(state.x, state.y - 1) && !mat.hasElement(state.x, state.y - 1)) {
+        //                vel.add(0, -40f);
+        //            }
+        //        }
+        acl.set(0, 0);
+        //haftreibung mit angreifender kraft statt mit velocity
+        float value = 0;
+        if (vel.len2() > 0) {
+            value = state.ahyes + Gdx.graphics.getDeltaTime();
+        } else {
+            state.ahyes = 0;
+        }
+        for (int i = 0; i < 8; i++) {
             value = move(value, mat, state);
-            if (value < 0) {
+            if (value == Float.NEGATIVE_INFINITY) {
+                state.ahyes = 0;
+                break;
+            } else if (value < 0) {
                 value *= -1;
                 state.ahyes = value;
                 break;
             } else {
                 state.ahyes = value;
             }
-            //            i++;
-            //            if (i > 10) {
-            //                System.out.println("peter");
-            //                if (i > 12) {
-            //                    break;
-            //                }
-            //            }
         }
     }
     
-    private float getFriction(ElementMatrix mat, ElementState state) {
+    private float getFriction(ElementMatrix mat, ElementState state, Direction dir) {
         float friction = 0;
         if (state.getFriction() != 0) {
-            for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
-                int dx = state.getX() + d.dx;
-                int dy = state.getY() + d.dy;
+            Direction[] ds = { dir.orth0(), dir.orth1() };
+            for (Direction d : ds) {
+                int dx = state.getX() + d.dx + dir.dx;
+                int dy = state.getY() + d.dy + dir.dy;
                 if (mat.checkBounds(dx, dy)) {
                     ElementState otherstate = mat.getState(dx, dy);
                     if (otherstate != state) {//ah yes the big stupid...
@@ -63,7 +117,7 @@ public class ElementWater extends Element {
                     }
                 }
             }
-            friction = friction / 3;
+            friction = friction / 2f;
         }
         return friction;
     }
@@ -71,6 +125,7 @@ public class ElementWater extends Element {
     private float square(float f) {
         return f * f;
     }
+    
     //get how much time there is to move (frame + time fraction from last frame)
     //calculate direction to move in
     //calculate the next move (check if there is an obstacle and the direction needs to change or find out with bresenham the next line tile)
@@ -84,7 +139,9 @@ public class ElementWater extends Element {
             System.out.println(velocity);
             throw new IllegalStateException();
         }
-        Vector2 offset = velocity.cpy().scl(timeleft);
+        float xoff = velocity.x * timeleft;
+        float yoff = velocity.y * timeleft;
+        //Vector2 offset = velocity.cpy().scl(timeleft);
         /*
          * Based on the video "Super Fast Ray Casting in Tiled Worlds using DDA" by
          * javidx9 (2021, https://www.youtube.com/watch?v=NbSee-XM7WA).
@@ -92,25 +149,23 @@ public class ElementWater extends Element {
         //constants
         final int txStart = state.getX();
         final int tyStart = state.getY();
-        final int txTarget = txStart + (int) Math.floor(offset.x);
-        final int tyTarget = tyStart + (int) Math.floor(offset.y);
+        final int txTarget = txStart + (int) Math.floor(xoff);
+        final int tyTarget = tyStart + (int) Math.floor(yoff);
         if (txStart == txTarget && tyStart == tyTarget) {
             return timeleft * -1;
         }
-        final float dx = offset.x;
-        final float dy = offset.y;
-        final float rayUnitStepSizeX = (float) Math.sqrt(1 + square(dy / dx));
-        final float rayUnitStepSizeY = (float) Math.sqrt(1 + square(dx / dy));
-        final int stepX = (int) Math.signum(dx);
-        final int stepY = (int) Math.signum(dy);
+        final float rayUnitStepSizeX = (float) Math.sqrt(1 + square(yoff / xoff));
+        final float rayUnitStepSizeY = (float) Math.sqrt(1 + square(xoff / yoff));
+        final int stepX = (int) Math.signum(xoff);
+        final int stepY = (int) Math.signum(yoff);
         //prep loop vars
         float lenx, leny;
-        if (dx < 0) {
+        if (xoff < 0) {
             lenx = 0;
         } else {
             lenx = 1;
         }
-        if (dy < 0) {
+        if (yoff < 0) {
             leny = 0;
         } else {
             leny = 1;
@@ -133,13 +188,18 @@ public class ElementWater extends Element {
                 leny += rayUnitStepSizeY;
                 dir = stepY < 0 ? Direction.Down : Direction.Up;
             }
-            ElementState next = mat.checkBounds(tx, ty) == false ? null : mat.getState(tx, ty);
-            float friction = 0;//next == null ? 0 : getFriction(mat, next);
-            float cost = 1f / ((1 - friction) * speed);
-            if (timeleft - cost < 0) {
-                timeleft *= -1;//this marks the result of the function as time out rather than an obstacle which could be circumvented
+            if (speed < getStartResistance(mat, state, dir)) {
+                timeleft *= -1;
                 break;
             }
+            ElementState next = !mat.checkBounds(tx, ty) ? null : mat.getState(tx, ty);
+            float friction = next == null ? 0 : getFriction(mat, state, dir);
+            friction = MathUtils.clamp(friction, 0, 1);
+            float cost = 1f / ((1 - friction) * speed);
+            //            if (timeleft - cost < 0) {
+            //                timeleft *= -1;//this marks the result of the function as time out rather than an obstacle which could be circumvented
+            //                break;
+            //            }
             boolean stoppedBefore = movement(mat, state, next, dir);
             if (stoppedBefore) {
                 break;
@@ -147,37 +207,58 @@ public class ElementWater extends Element {
             state.getVelocity().scl(1 - friction);
             speed *= (1 - friction);
             timeleft -= cost;
+            //the friction applies to movement so even though the budget didnt allow it, still made the step
+            if (timeleft < 0) {
+                return Float.NEGATIVE_INFINITY;
+            }
         }
         return timeleft;
     }
     
     private boolean movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
-        //        if (next != null && next.getElement().density == 1) {
-        //            mat.switchStates(state, next);
-        //            return false;
-        //        } else {
-        //            Vector2 vel = state.getVelocity();
-        //            float f = vel.x * dir.dx + vel.y * dir.dy;
-        //            f *= 1.5f;
-        //            vel = vel.sub(f * dir.dx, f * dir.dy);
-        //        }
-        //        return true;
         float dens = state.getElement().density;
+        float densnex = next == null ? 0 : next.getElement().density;
         float densityDiff = next == null ? -state.getElement().density
                 : next.getElement().density - state.getElement().density;
         // densityDiff = MathUtils.clamp(densityDiff, -3, 3);
-        float diversion = densityDiff / 3 + 0.5f;
-        diversion = MathUtils.clamp(diversion, 0, 1);
-        if (next != null && next.getElement().density == 0) {
-            diversion = 1;
-        }
+        //        float diversion = densityDiff / 3 + 0.5f;
+        //        diversion = MathUtils.clamp(diversion, 0, 1);
+        //        if (next != null && next.getElement().density == 0) {
+        //            diversion = 1;
+        //        }
+        float str = next == null ? 0 : next.getElement().getFriction();
+        //boolean b = state.getVelocity().len2() >= square(str);
+        Vector2 v = state.getVelocity();
+        Vector2 other = next == null ? Vector2.Zero : next.getVelocity();
+        Vector2 check = v.cpy().sub(other);
         boolean b = (densityDiff < 0 && dens > 1) || (densityDiff > 0 && dens < 1);
+        // float factor = (densnex - dens) / (dens + densnex);
+        //factor = factor * 0.5f + 0.5f;
+        //boolean b = mat.random() > factor;
+        if (next != null) {
+            //b = b && next.getElement() != this;
+        }
+        //TODO try to not bounce of something which moves faster in the same direction
+        //TODO generally try to use deltav instead of state.vel
+//        float gurke = check.x * dir.dx + check.y * dir.dy;
+//        if (gurke > 0) {
+//            //b = true;
+//        }
+//        float g0 = v.x * dir.dx + v.y * dir.dy;
+//        float g1 = other.x * dir.dx + other.y * dir.dy;
+//        if (g1 < g0) {
+//            b = true;
+//        }
+        float value = other.x * v.x + other.y + v.y;
+        //        value /= other.len() * v.len();
+        //        value *= 0.5f;
+        //        value += 0.5f;
+        //        value = 1 - value;
         if (next != null && b && !next.getElement().isFixed) {
             mat.switchStates(state, next);
             return false;
         } else {
             Direction d;
-            Vector2 v = state.getVelocity();
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && state.getVelocity().x == 0) || (dir.dy == 0 && state.getVelocity().y == 0)) {
                 if (dir.dy == 0) {
@@ -200,26 +281,14 @@ public class ElementWater extends Element {
                 v.y = 0;
             }
             if (d.dx != 0) {
-                v.x = d.dx * f;
+                v.x += d.dx * f;
             } else if (d.dy != 0) {
-                v.y = d.dy * f;
+                v.y += d.dy * f;
             }
             return true;
         }
         
         //return true;
-    }
-    
-    public void collisionResponse(float e, float ma, float mb, Vector2 Vai, Vector2 Vbi) {
-        float k = 1 / (ma * ma) + 2 / (ma * mb) + 1 / (mb * mb);
-        float Jx = (e + 1) / k * (Vai.x - Vbi.x) * (1 / ma + 1 / mb) - (e + 1) / k * (Vai.y - Vbi.y);
-        float Jy = -(e + 1) / k * (Vai.x - Vbi.x) + (e + 1) / k * (Vai.y - Vbi.y) * (1 / ma + 1 / mb);
-        Vai.x = Vai.x - Jx / ma;
-        Vai.y = Vai.y - Jy / ma;
-        Vbi.x = Vbi.x - Jx / mb;
-        Vbi.y = Vbi.y - Jy / mb;
-        Vai.clamp(-10, 10);
-        Vbi.clamp(-10, 10);
     }
     
     @Override

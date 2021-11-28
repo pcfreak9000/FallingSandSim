@@ -6,7 +6,11 @@ public class ElementSand extends ElementWater {
     
     public ElementSand() {
         this.c = Color.YELLOW;
-        this.density = 0.04f;
+        this.density = 1.15f;
     }
     
+    @Override
+    public float getFriction() {
+        return 0.999f;
+    }
 }

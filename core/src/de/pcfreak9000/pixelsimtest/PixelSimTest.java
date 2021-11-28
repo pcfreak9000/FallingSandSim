@@ -1,8 +1,12 @@
 package de.pcfreak9000.pixelsimtest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -45,6 +49,14 @@ public class PixelSimTest extends ApplicationAdapter {
         sand = new ElementSand();
     }
     
+    private static class Spout {
+        Element element;
+        int x, y;
+        int rad;
+    }
+    
+    List<Spout> spouts = new ArrayList<>();
+    
     @Override
     public void render() {
         if (Gdx.input.isButtonJustPressed(Buttons.LEFT) || Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
@@ -53,7 +65,20 @@ public class PixelSimTest extends ApplicationAdapter {
             Vector2 vec = vp.unproject(new Vector2(x, y));
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
-            mat.createCircle(ax, ay, 15, Gdx.input.isButtonPressed(Buttons.LEFT) ? water : sand);
+            Element elem = Gdx.input.isButtonPressed(Buttons.LEFT) ? water : stone;
+            if (!Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
+                mat.createCircle(ax, ay, 15, elem);
+            } else {
+                Spout s = new Spout();
+                s.x = ax;
+                s.y = ay;
+                s.rad = 3;
+                s.element = elem;
+                spouts.add(s);
+            }
+        }
+        for (Spout s : spouts) {
+            mat.createCircle(s.x, s.y, s.rad, s.element);
         }
         for (int i = 0; i < 1; i++) {
             mat.update();

@@ -13,10 +13,18 @@ public abstract class Element {
         
     }
     
+    public void applyForces(ElementState state, ElementMatrix mat) {
+        
+    }
+    
+    public float getStartResistance(ElementMatrix mat, ElementState state, Direction dir) {
+        return 10;
+    }
+    
     public ElementState createElementState(int x, int y) {
         return new ElementState(x, y, this);
     }
-
+    
     public float getFriction() {
         return 0;
     }
