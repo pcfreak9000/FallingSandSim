@@ -59,14 +59,6 @@ public class ElementMatrix {
             for (int i : indizes) {
                 ElementState t = matrix[i][j];
                 if (t != null) {
-                    t.applyForces(this);
-                }
-            }
-        }
-        for (int j : indizes2) {
-            for (int i : indizes) {
-                ElementState t = matrix[i][j];
-                if (t != null) {
                     t.update(this);
                 }
             }

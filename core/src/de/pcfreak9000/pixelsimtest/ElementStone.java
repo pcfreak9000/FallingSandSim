@@ -13,4 +13,9 @@ public class ElementStone extends Element {
     public float getFriction() {
         return 10f;
     }
+    
+    @Override
+    public float getStickyness() {
+        return 100;
+    }
 }

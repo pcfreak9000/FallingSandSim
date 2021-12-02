@@ -8,7 +8,7 @@ public class ElementState {
     private Element element;
     int x, y;
     
-    private Color color;
+    public Color color;
     //possibly move that into a subclass?
     private Vector2 velocity;
     private Vector2 acceleration;
@@ -55,8 +55,8 @@ public class ElementState {
     public float getFriction() {
         return element.getFriction();
     }
-
-    public void applyForces(ElementMatrix elementMatrix) {
-        this.element.applyForces(this, elementMatrix);
+    
+    public float getStickyness() {
+        return element.getStickyness();
     }
 }

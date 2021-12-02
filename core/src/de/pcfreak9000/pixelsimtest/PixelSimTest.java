@@ -22,6 +22,7 @@ public class PixelSimTest extends ApplicationAdapter {
     private Element stone;
     private Element water;
     private Element sand;
+    private Element[] elements = new Element[4];
     
     @Override
     public void create() {
@@ -44,9 +45,13 @@ public class PixelSimTest extends ApplicationAdapter {
     
     private void setupElements() {
         air = new ElementAir();
+        elements[0] = air;
         stone = new ElementStone();
+        elements[1] = stone;
         water = new ElementWater();
+        elements[2] = water;
         sand = new ElementSand();
+        elements[3] = sand;
     }
     
     private static class Spout {
@@ -56,25 +61,48 @@ public class PixelSimTest extends ApplicationAdapter {
     }
     
     List<Spout> spouts = new ArrayList<>();
+    Element current;
     
     @Override
     public void render() {
-        if (Gdx.input.isButtonJustPressed(Buttons.LEFT) || Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
+        if (current == null) {
+            current = water;
+        }
+        for (int i = 0; i < elements.length; i++) {
+            if (Gdx.input.isKeyJustPressed(Keys.NUM_0 + i)) {
+                current = elements[i];
+                break;
+            }
+        }
+        if (Gdx.input.isButtonJustPressed(Buttons.RIGHT)) {
             int x = Gdx.input.getX();
             int y = Gdx.input.getY();
             Vector2 vec = vp.unproject(new Vector2(x, y));
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
-            Element elem = Gdx.input.isButtonPressed(Buttons.LEFT) ? water : stone;
             if (!Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-                mat.createCircle(ax, ay, 15, elem);
+                mat.createCircle(ax, ay, 15, current);
             } else {
                 Spout s = new Spout();
                 s.x = ax;
                 s.y = ay;
                 s.rad = 3;
-                s.element = elem;
+                s.element = current;
                 spouts.add(s);
+            }
+        }
+        if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
+            int x = Gdx.input.getX();
+            int y = Gdx.input.getY();
+            Vector2 vec = vp.unproject(new Vector2(x, y));
+            int ax = (int) Math.floor(vec.x);
+            int ay = (int) Math.floor(vec.y);
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (mat.checkBounds(ax + i, ay + j)) {
+                        mat.killState(ax + i, ay + j);
+                    }
+                }
             }
         }
         for (Spout s : spouts) {
