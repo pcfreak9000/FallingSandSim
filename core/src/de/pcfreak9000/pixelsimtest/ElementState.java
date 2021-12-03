@@ -13,7 +13,7 @@ public class ElementState {
     private Vector2 velocity;
     private Vector2 acceleration;
     
-    public float ahyes;
+    public float timepart;
     
     public ElementState(int x, int y, Element element) {
         this.x = x;

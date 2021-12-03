@@ -1,5 +1,7 @@
 package de.pcfreak9000.pixelsimtest;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,7 +22,7 @@ public class ElementWater extends Element {
         //        return 0;
         float accel = 0;
         int f = 0;
-        Direction[] ds = { Direction.Down};//{ Direction.Left, Direction.Right, Direction.Up };
+        Direction[] ds = { Direction.Down };//{ Direction.Left, Direction.Right, Direction.Up };
         for (Direction d : ds) {
             int ax = x + d.dx;
             int ay = y + d.dy;
@@ -33,7 +35,7 @@ public class ElementWater extends Element {
             return 0;
         }
         accel = g * accel / state.getElement().density * 1f / f;
-        return accel;
+        return 0;
     }
     //TODO consider testing a from bot to top update strategy?
     
@@ -59,7 +61,7 @@ public class ElementWater extends Element {
         float g = 40;
         acl.add(0, -g + getBuoyancyAccel(mat, state, g));
         for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
-           // correctAcceleration(state, mat, acl, d);
+            correctAcceleration(state, mat, acl, d);
         }
         float stickyness = getStickyness(mat, state);
         if (vel.len2() > 0) {
@@ -72,23 +74,11 @@ public class ElementWater extends Element {
         acl.set(0, 0);
         if (vel.len2() > 0) {
             // state.color = Color.GREEN;
-            float time = state.ahyes + Gdx.graphics.getDeltaTime();
-            for (int i = 0; i < 8; i++) {
-                time = move(time, mat, state);
-                if (time == Float.NEGATIVE_INFINITY) {
-                    state.ahyes = 0;
-                    break;
-                } else if (time < 0) {
-                    time *= -1;
-                    state.ahyes = time;
-                    break;
-                } else {
-                    state.ahyes = time;
-                }
-            }
+            float time = state.timepart + Gdx.graphics.getDeltaTime();
+            move(time, mat, state);
         } else {
             // state.color = Color.RED;
-            state.ahyes = 0;
+            state.timepart = 0;
         }
         
     }
@@ -127,7 +117,7 @@ public class ElementWater extends Element {
             }
             friction = friction / 2f;
         }
-        return friction;
+        return MathUtils.clamp(friction, 0, 1);
     }
     
     private float square(float f) {
@@ -140,87 +130,74 @@ public class ElementWater extends Element {
     //check if there is enough time to do that move (if not, accumulate the left over time fraction). use an effective velocity in which friction is accounted for 
     //if enough time, do that move and subtract the needed time and apply the friction for that move, then go to step 3 
     
-    private float move(float timeleft, ElementMatrix mat, ElementState state) {
+    private void move(float time, ElementMatrix mat, ElementState state) {
         Vector2 velocity = state.getVelocity();
         float speed = velocity.len();
-        if (speed != speed) {
-            System.out.println(velocity);
-            throw new IllegalStateException();
-        }
-        float xoff = velocity.x * timeleft;
-        float yoff = velocity.y * timeleft;
-        //Vector2 offset = velocity.cpy().scl(timeleft);
-        /*
-         * Based on the video "Super Fast Ray Casting in Tiled Worlds using DDA" by
-         * javidx9 (2021, https://www.youtube.com/watch?v=NbSee-XM7WA).
-         */
-        //constants
-        final int txStart = state.getX();
-        final int tyStart = state.getY();
-        final int txTarget = txStart + (int) Math.floor(xoff);
-        final int tyTarget = tyStart + (int) Math.floor(yoff);
-        if (txStart == txTarget && tyStart == tyTarget) {
-            return timeleft * -1;
-        }
-        final float rayUnitStepSizeX = (float) Math.sqrt(1 + square(yoff / xoff));
-        final float rayUnitStepSizeY = (float) Math.sqrt(1 + square(xoff / yoff));
-        final int stepX = (int) Math.signum(xoff);
-        final int stepY = (int) Math.signum(yoff);
-        //prep loop vars
-        float lenx, leny;
-        if (xoff < 0) {
-            lenx = 0;
-        } else {
-            lenx = 1;
-        }
-        if (yoff < 0) {
-            leny = 0;
-        } else {
-            leny = 1;
-        }
-        lenx *= rayUnitStepSizeX;
-        leny *= rayUnitStepSizeY;
-        int tx = txStart;
-        int ty = tyStart;
-        Direction dir;
-        while (true) {
+        for (int i = 0; i < 8; i++) {
+            if (speed != speed) {
+                throw new IllegalStateException(Objects.toString(velocity));
+            }
+            float xoff = velocity.x * time;
+            float yoff = velocity.y * time;
+            /*
+             * Based on the video "Super Fast Ray Casting in Tiled Worlds using DDA" by
+             * javidx9 (2021, https://www.youtube.com/watch?v=NbSee-XM7WA).
+             */
+            int tx = state.getX();
+            int ty = state.getY();
+            final int txTarget = tx + (int) Math.floor(xoff);
+            final int tyTarget = ty + (int) Math.floor(yoff);
             if (tx == txTarget && ty == tyTarget) {
-                return timeleft * -1;
+                state.timepart = time;
+                return;
             }
-            if (lenx < leny) {
-                tx += stepX;
-                lenx += rayUnitStepSizeX;
-                dir = stepX < 0 ? Direction.Left : Direction.Right;
-            } else {
-                ty += stepY;
-                leny += rayUnitStepSizeY;
-                dir = stepY < 0 ? Direction.Down : Direction.Up;
-            }
-//            if (speed < getStartResistance(mat, state, dir)) {
-//                timeleft *= -1;
-//                break;
-//            }
-            ElementState next = !mat.checkBounds(tx, ty) ? null : mat.getState(tx, ty);
-            float friction = next == null ? 0 : getFriction(mat, state, dir);
-            friction = MathUtils.clamp(friction, 0, 1);
-            float cost = 1f / ((1 - friction) * speed);
-            //            if (timeleft - cost < 0) {
-            //                timeleft *= -1;//this marks the result of the function as time out rather than an obstacle which could be circumvented
-            //                break;
-            //            }
-            boolean stoppedBefore = movement(mat, state, next, dir);
-            if (stoppedBefore) {
-                break;
-            }
-            state.getVelocity().scl(1 - friction);
-            speed *= (1 - friction);
-            timeleft -= cost;
-            //the friction applies to movement so even though the budget didnt allow it, still made the step
-            if (timeleft < 0) {
-                return Float.NEGATIVE_INFINITY;
+            final float rayUnitStepSizeX = (float) Math.sqrt(1 + square(yoff / xoff));
+            final float rayUnitStepSizeY = (float) Math.sqrt(1 + square(xoff / yoff));
+            final int stepX = (int) Math.signum(xoff);
+            final int stepY = (int) Math.signum(yoff);
+            float lenx = xoff < 0 ? 0 : rayUnitStepSizeX;
+            float leny = yoff < 0 ? 0 : rayUnitStepSizeY;
+            Direction dir;
+            while (true) {
+                if (tx == txTarget && ty == tyTarget) {
+                    state.timepart = time;
+                    return;
+                }
+                if (lenx < leny) {
+                    tx += stepX;
+                    lenx += rayUnitStepSizeX;
+                    dir = stepX < 0 ? Direction.Left : Direction.Right;
+                } else {
+                    ty += stepY;
+                    leny += rayUnitStepSizeY;
+                    dir = stepY < 0 ? Direction.Down : Direction.Up;
+                }
+                if (speed < 1) {
+                    velocity.setZero();
+                    speed = 0;
+                    state.timepart = 0;
+                    return;
+                }
+                ElementState next = !mat.checkBounds(tx, ty) ? null : mat.getState(tx, ty);
+                float friction = next == null ? 0 : getFriction(mat, state, dir);
+                float timecost = 1f / ((1 - friction) * speed);
+                //            if (timeleft - cost < 0) {
+                //                break;//this marks the result of the function as time out rather than an obstacle which could be circumvented
+                //            }
+                boolean stoppedBefore = movement(mat, state, next, dir);
+                if (stoppedBefore) {
+                    break;
+                }
+                velocity.scl(1 - friction);
+                speed *= (1 - friction);
+                time -= timecost;
+                //the friction applies to movement so even though the budget didnt allow it, still made the step
+                if (time < 0) {
+                    state.timepart = 0;
+                    return;
+                }
             }
         }
-        return timeleft;
     }
     
     @Override
@@ -316,6 +293,6 @@ public class ElementWater extends Element {
     
     @Override
     public float getFriction() {
-        return 0.01f;
+        return 0.05f;
     }
 }

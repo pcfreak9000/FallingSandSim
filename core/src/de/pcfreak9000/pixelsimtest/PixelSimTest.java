@@ -97,8 +97,8 @@ public class PixelSimTest extends ApplicationAdapter {
             Vector2 vec = vp.unproject(new Vector2(x, y));
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
+            for (int i = -7; i <= 7; i++) {
+                for (int j = -7; j <= 7; j++) {
                     if (mat.checkBounds(ax + i, ay + j)) {
                         mat.killState(ax + i, ay + j);
                     }
