@@ -6,7 +6,8 @@ public abstract class Element {
     
     public float density;
     public boolean isFixed;
-    
+    public boolean fluid;
+
     public Color c;
     
     public void update(ElementState state, ElementMatrix mat) {
