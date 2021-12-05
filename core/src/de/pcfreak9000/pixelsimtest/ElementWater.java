@@ -60,17 +60,14 @@ public class ElementWater extends Element {
         Vector2 acl = state.getAcceleration();
         float g = 40;
         acl.add(0, -g + getBuoyancyAccel(mat, state, g));
-        for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
-            correctAcceleration(state, mat, acl, d);
+        if (!state.moving) {
+            for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
+                correctAcceleration(state, mat, acl, d);
+            }
         }
-        float stickyness = getStickyness(mat, state);
-        if (vel.len2() > 0) {
-            vel.add(acl);
-        } else if (acl.len2() > square(stickyness)) {
-            float a = square(stickyness) / acl.len2();
-            acl.scl(1 - a * 0.5f);
-            vel.add(acl);
-        }
+        // if (vel.len2() > 0) {
+        vel.add(acl);
+        //}
         acl.set(0, 0);
         if (vel.len2() > 0) {
             // state.color = Color.GREEN;
@@ -103,19 +100,26 @@ public class ElementWater extends Element {
     private float getFriction(ElementMatrix mat, ElementState state, Direction dir) {
         float friction = 0;
         if (state.getFriction() != 0) {
+            //left, right, front left, front right
+            //current j=0, front j=1
             Direction[] ds = { dir.orth0(), dir.orth1() };
-            for (Direction d : ds) {
-                int dx = state.getX() + d.dx + dir.dx;
-                int dy = state.getY() + d.dy + dir.dy;
-                if (mat.checkBounds(dx, dy)) {
-                    ElementState otherstate = mat.getState(dx, dy);
-                    if (otherstate != state) {//ah yes the big stupid...
+            for (int j = 0; j <= 1; j++) {
+                for (Direction d : ds) {
+                    int dx = state.getX() + d.dx + j * dir.dx;
+                    int dy = state.getY() + d.dy + j * dir.dy;
+                    if (mat.checkBounds(dx, dy)) {
+                        ElementState otherstate = mat.getState(dx, dy);
+                        //if (otherstate != state) {//ah yes the big stupid...
                         float otherfriction = otherstate.getFriction();
+                        float difx = state.getVelocity().x - otherstate.getVelocity().x;
+                        float dify = state.getVelocity().y - otherstate.getVelocity().y;
+                        float dif = dir.dx * dir.dx * difx + dir.dy * dir.dy * dify;
                         friction += otherfriction * state.getFriction();
+                        //}
                     }
                 }
             }
-            friction = friction / 2f;
+            friction = friction / 4f;
         }
         return MathUtils.clamp(friction, 0, 1);
     }
@@ -133,7 +137,7 @@ public class ElementWater extends Element {
     private void move(float time, ElementMatrix mat, ElementState state) {
         Vector2 velocity = state.getVelocity();
         float speed = velocity.len();
-        for (int i = 0; i < 8; i++) {
+        outer: for (int i = 0; i < 8; i++) {
             if (speed != speed) {
                 throw new IllegalStateException(Objects.toString(velocity));
             }
@@ -149,7 +153,7 @@ public class ElementWater extends Element {
             final int tyTarget = ty + (int) Math.floor(yoff);
             if (tx == txTarget && ty == tyTarget) {
                 state.timepart = time;
-                return;
+                break outer;
             }
             final float rayUnitStepSizeX = (float) Math.sqrt(1 + square(yoff / xoff));
             final float rayUnitStepSizeY = (float) Math.sqrt(1 + square(xoff / yoff));
@@ -158,10 +162,14 @@ public class ElementWater extends Element {
             float lenx = xoff < 0 ? 0 : rayUnitStepSizeX;
             float leny = yoff < 0 ? 0 : rayUnitStepSizeY;
             Direction dir;
-            while (true) {
+            inner: while (true) {
                 if (tx == txTarget && ty == tyTarget) {
                     state.timepart = time;
-                    return;
+                    break outer;
+                }
+                if(!checkMovementAny(mat, state)) {
+                    speed = 0;
+                    break outer;
                 }
                 if (lenx < leny) {
                     tx += stepX;
@@ -172,32 +180,46 @@ public class ElementWater extends Element {
                     leny += rayUnitStepSizeY;
                     dir = stepY < 0 ? Direction.Down : Direction.Up;
                 }
-                if (speed < 1) {
-                    velocity.setZero();
-                    speed = 0;
-                    state.timepart = 0;
-                    return;
-                }
                 ElementState next = !mat.checkBounds(tx, ty) ? null : mat.getState(tx, ty);
                 float friction = next == null ? 0 : getFriction(mat, state, dir);
                 float timecost = 1f / ((1 - friction) * speed);
                 //            if (timeleft - cost < 0) {
                 //                break;//this marks the result of the function as time out rather than an obstacle which could be circumvented
                 //            }
-                boolean stoppedBefore = movement(mat, state, next, dir);
-                if (stoppedBefore) {
-                    break;
+                if (time - timecost < 0) {
+                    state.timepart = 0;
+                    break outer;
+                }
+                MovementResult movResult = movement(mat, state, next, dir);
+                if (movResult == MovementResult.ChangedDirection) {
+                    break inner;
+                }
+                if (movResult == MovementResult.Waiting) {
+                    state.timepart = time;
+                    break outer;
                 }
                 velocity.scl(1 - friction);
                 speed *= (1 - friction);
                 time -= timecost;
-                //the friction applies to movement so even though the budget didnt allow it, still made the step
-                if (time < 0) {
-                    state.timepart = 0;
-                    return;
-                }
             }
         }
+        if (speed < 1) {
+            velocity.setZero();
+            speed = 0;
+            state.timepart = 0;
+        }
+    }
+    //make fluids dont check this or include == check in canSwitch for fluids?
+    private boolean checkMovementAny(ElementMatrix mat, ElementState state) {
+        Direction[] ds = Direction.VONNEUMANN_NEIGHBOURS;
+        for (Direction d : ds) {
+            int x = state.getX() + d.dx;
+            int y = state.getY() + d.dy;
+            if (canSwitch(state, mat.getState(x, y), mat)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -218,9 +240,12 @@ public class ElementWater extends Element {
         return (densityDiff < 0 && dens > 1) || (densityDiff > 0 && dens < 1);
     }
     
-    private boolean movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
+    private static enum MovementResult {
+        Passed, ChangedDirection, Waiting;
+    }
+    
+    private MovementResult movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
         float dens = state.getElement().density;
-        
         // densityDiff = MathUtils.clamp(densityDiff, -3, 3);
         //        float diversion = densityDiff / 3 + 0.5f;
         //        diversion = MathUtils.clamp(diversion, 0, 1);
@@ -237,6 +262,9 @@ public class ElementWater extends Element {
         //boolean b = mat.random() > factor;
         if (next != null) {
             //b = b && next.getElement() != this;
+        }
+        if (check.x * dir.dx * dir.dx + check.y * dir.dy * dir.dy < 0) {
+            //return MovementResult.Waiting;
         }
         //TODO try to not bounce of something which moves faster in the same direction
         //TODO generally try to use deltav instead of state.vel
@@ -256,15 +284,15 @@ public class ElementWater extends Element {
         //        value = 1 - value;
         if (canSwitch(state, next, mat)) {
             mat.switchStates(state, next);
-            return false;
+            return MovementResult.Passed;
         } else {
             Direction d;
             float f = v.x * dir.dx + v.y * dir.dy;
-            if ((dir.dx == 0 && state.getVelocity().x == 0) || (dir.dy == 0 && state.getVelocity().y == 0)) {
+            if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    d = dens > 1 ? Direction.Down : Direction.Up;
+                    d = mat.random() < 0.5 ? Direction.Down : Direction.Up;
                 } else {
-                    d = mat.random() > 0.5 ? dir.orth0() : dir.orth1();
+                    d = mat.random() < 0.5 ? Direction.Left : Direction.Right;//dir.orth0() : dir.orth1();
                 }
             } else {
                 if (dir.dx == 0) {
@@ -285,7 +313,7 @@ public class ElementWater extends Element {
             } else if (d.dy != 0) {
                 v.y += d.dy * f;
             }
-            return true;
+            return MovementResult.ChangedDirection;
         }
         
         //return true;

@@ -11,6 +11,6 @@ public class ElementSand extends ElementWater {
     
     @Override
     public float getFriction() {
-        return 0.4f;
+        return 0.5f;
     }
 }

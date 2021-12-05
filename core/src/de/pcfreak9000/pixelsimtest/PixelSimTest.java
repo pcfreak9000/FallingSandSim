@@ -81,7 +81,7 @@ public class PixelSimTest extends ApplicationAdapter {
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
             if (!Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-                mat.createCircle(ax, ay, 15, current);
+                mat.createCircle(ax, ay, 1, current);
             } else {
                 Spout s = new Spout();
                 s.x = ax;

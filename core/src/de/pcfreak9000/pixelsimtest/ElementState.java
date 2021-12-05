@@ -8,6 +8,8 @@ public class ElementState {
     private Element element;
     int x, y;
     
+    public boolean moving;
+    
     public Color color;
     //possibly move that into a subclass?
     private Vector2 velocity;

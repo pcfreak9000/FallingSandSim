@@ -1,7 +1,7 @@
 package de.pcfreak9000.pixelsimtest;
 
 public enum Direction {
-    Up(0, 1), Down(0, -1), Left(-1, 0), Right(1, 0), UpLeft(-1, 1), UpRight(1, 1), DownLeft(-1, -1), DownRight(1, -1);
+    Up(0, 1), Down(0, -1), Left(-1, 0), Right(1, 0), UpLeft(-1, 1), UpRight(1, 1), DownLeft(-1, -1), DownRight(1, -1), Zero(0,0);
     
     public static final Direction[] MOORE_NEIGHBOURS = Direction.values();
     public static final Direction[] VONNEUMANN_NEIGHBOURS = { Up, Down, Left, Right };
