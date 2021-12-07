@@ -21,6 +21,26 @@ public class ElementStateKinematics {
     //inelastic bounces?
     //clean up
     
+    //sucks
+    private static float getBuoyancy(ElementMatrix mat, ElementState state, float g) {
+        int x = state.x;
+        int y = state.y;
+        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
+            ElementState state4 = mat.getState(x, y + 1);
+            Vector2 v4 = state4.getVelocity();
+            Vector2 v0 = state.getVelocity();
+            Vector2 v1 = Vector2.Zero;
+            if (mat.checkBounds(x, y - 1)) {
+                v1 = mat.getState(x, y - 1).getVelocity();
+            }
+            //if (v4.y < v0.y) {
+            return g * state4.getElement().density / state.getElement().density;
+            //}
+        }
+        return 0;
+    }
+    
+    //sucks
     private static float getBuoyancyAccel(ElementMatrix mat, ElementState state, float g) {
         int x = state.x;
         int y = state.y;
@@ -30,7 +50,7 @@ public class ElementStateKinematics {
         //        return 0;
         float accel = 0;
         int f = 0;
-        Direction[] ds = { Direction.Down };//{ Direction.Left, Direction.Right, Direction.Up };
+        Direction[] ds = { Direction.Left, Direction.Right, Direction.Up };
         for (Direction d : ds) {
             int ax = x + d.dx;
             int ay = y + d.dy;
@@ -38,12 +58,12 @@ public class ElementStateKinematics {
                 accel += mat.getState(ax, ay).getElement().density;
                 f += 1;
             }
-        } //FIXME buoyancy
+        }
         if (f == 0) {
             return 0;
         }
         accel = g * accel / state.getElement().density * 1f / f;
-        return 0;
+        return accel;
     }
     
     private static void correctAcceleration(ElementState state, ElementMatrix mat, Vector2 acl, Direction d) {
@@ -65,9 +85,12 @@ public class ElementStateKinematics {
         Vector2 vel = state.getVelocity();
         Vector2 acl = state.getAcceleration();
         float g = 40;
-        acl.add(0, -g + getBuoyancyAccel(mat, state, g));
-        if (!state.moving && !state.getElement().fluid) {
-            for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {
+        float dens = state.getElement().density;
+        if (dens != 1) {
+            acl.add(0, state.getElement().density > 1 ? -g : g);
+        }
+        if (!state.moving && !state.getElement().fluid) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
+            for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {//or bring in some random x-errors?
                 correctAcceleration(state, mat, acl, d);
             }
         }
@@ -82,7 +105,7 @@ public class ElementStateKinematics {
         
     }
     
-    private static  float getFriction(ElementMatrix mat, ElementState state, Direction dir) {
+    private static float getFriction(ElementMatrix mat, ElementState state, Direction dir) {
         float friction = 0;
         if (state.getFriction() != 0) {
             //left, right, front left, front right
@@ -182,7 +205,8 @@ public class ElementStateKinematics {
                     break outer;
                 }
                 velocity.scl(1 - friction);
-                speed *= (1 - friction);
+                speed = velocity.len();//hmm
+                //speed *= (1 - friction);
                 time -= timecost;
             }
         }
@@ -213,12 +237,12 @@ public class ElementStateKinematics {
             return false;
         }
         float dens = state.getElement().density;
-        float densityDiff = next == null ? -state.getElement().density
-                : next.getElement().density - state.getElement().density;
+        float densityDiff = next == null ? -dens : next.getElement().density - dens;
         return (densityDiff < 0 && dens > 1) || (densityDiff > 0 && dens < 1);
+        //return true;
+        //return densityDiff < 0;
     }
     
-
     private static void applyPullAlong(ElementMatrix mat, ElementState state, Direction dir) {
         Direction[] ds = { dir.orth0(), dir.orth1() };
         for (Direction d : ds) {
@@ -239,6 +263,7 @@ public class ElementStateKinematics {
         //generally try to use deltav instead of state.vel -> both come with problems
         if (canSwitch(state, next, mat)) {
             applyPullAlong(mat, state, dir);
+            state.getVelocity().scl(0.9f);//this causes a left-tendency, weird
             mat.switchStates(state, next);
             return MovementResult.Passed;
         } else {
@@ -246,7 +271,7 @@ public class ElementStateKinematics {
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    d = Direction.Down;//oof
+                    d = state.getElement().density > 1 ? Direction.Down : Direction.Up;//oof
                 } else {
                     d = mat.random() < 0.5 ? Direction.Left : Direction.Right;
                 }

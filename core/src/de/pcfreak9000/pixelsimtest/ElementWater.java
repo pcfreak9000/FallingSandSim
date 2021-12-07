@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 
 public class ElementWater extends Element {
     public ElementWater() {
-        this.density = 1.1f;
+        this.density = 49f;
         this.c = Color.BLUE;
         this.fluid = true;
     }
