@@ -7,15 +7,11 @@ public abstract class Element {
     public float density;
     public boolean isFixed;
     public boolean fluid;
-
+    
     public Color c;
     
     public void update(ElementState state, ElementMatrix mat) {
         
-    }
-    
-    public float getStartResistance(ElementMatrix mat, ElementState state, Direction dir) {
-        return 0;
     }
     
     public ElementState createElementState(int x, int y) {
@@ -25,8 +21,16 @@ public abstract class Element {
     public float getFriction() {
         return 0;
     }
-
-    public float getStickyness() {
+    
+    public float getInternalFriction() {
+        return getFriction();
+    }
+    
+    public float getPulledAlongChance() {
+        return 0;
+    }
+    
+    public float getPulledAlongStrength() {
         return 0;
     }
 }

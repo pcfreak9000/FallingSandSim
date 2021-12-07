@@ -58,7 +58,15 @@ public class ElementState {
         return element.getFriction();
     }
     
-    public float getStickyness() {
-        return element.getStickyness();
+    public float getInternalFriction() {
+        return element.getInternalFriction();
+    }
+    
+    public float getPulledAlongChance() {
+        return element.getPulledAlongChance();
+    }
+    
+    public float getPulledAlongStrength() {
+        return element.getPulledAlongStrength();
     }
 }
