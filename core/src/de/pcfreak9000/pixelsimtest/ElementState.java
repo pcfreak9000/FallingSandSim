@@ -17,6 +17,8 @@ public class ElementState {
     
     public float timepart;
     
+    public int lastframe=0;
+    
     public ElementState(int x, int y, Element element) {
         this.x = x;
         this.y = y;
@@ -26,8 +28,8 @@ public class ElementState {
         this.acceleration = new Vector2();
     }
     
-    public void update(ElementMatrix matrix) {
-        this.element.update(this, matrix);
+    public void update(ElementMatrix matrix, int frame) {
+        this.element.update(this, matrix, frame);
     }
     
     public Vector2 getVelocity() {

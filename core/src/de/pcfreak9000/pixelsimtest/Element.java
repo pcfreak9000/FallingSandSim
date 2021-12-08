@@ -10,7 +10,7 @@ public abstract class Element {
     
     public Color c;
     
-    public void update(ElementState state, ElementMatrix mat) {
+    public void update(ElementState state, ElementMatrix mat, int frame) {
         
     }
     

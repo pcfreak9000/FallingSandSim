@@ -6,7 +6,7 @@ public class ElementSand extends ElementWater {
     
     public ElementSand() {
         this.c = Color.YELLOW;
-        this.density = 0.9f;
+        this.density = 11f;
         this.fluid = false;
     }
     
@@ -17,7 +17,7 @@ public class ElementSand extends ElementWater {
     
     @Override
     public float getPulledAlongChance() {
-        return 0.7f;
+        return 0.07f;
     }
     
     @Override

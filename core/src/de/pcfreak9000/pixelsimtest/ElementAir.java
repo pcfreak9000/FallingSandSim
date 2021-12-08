@@ -8,10 +8,16 @@ public class ElementAir extends Element {
         this.fluid = true;
         this.c = Color.GREEN;
     }
+    
     @Override
-    public void update(ElementState state, ElementMatrix mat) {
-      // ElementStateKinematics.apply(state, mat);
+    public void update(ElementState state, ElementMatrix mat, int frame) {
+        if(state.lastframe == frame) {
+            return;
+        }
+        state.lastframe = frame;
+        ElementStateKinematics.apply(state, mat);
     }
+    
     @Override
     public float getFriction() {
         return 0.01f;

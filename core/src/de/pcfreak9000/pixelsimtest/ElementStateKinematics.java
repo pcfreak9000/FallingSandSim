@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ElementStateKinematics {
     
-    private static final int MAX_ITERATIONS = 8;
+    private static final int MAX_ITERATIONS = 30;
     
     private static enum MovementResult {
         Passed, ChangedDirection, Waiting;
@@ -20,51 +20,6 @@ public class ElementStateKinematics {
     //randomness
     //inelastic bounces?
     //clean up
-    
-    //sucks
-    private static float getBuoyancy(ElementMatrix mat, ElementState state, float g) {
-        int x = state.x;
-        int y = state.y;
-        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
-            ElementState state4 = mat.getState(x, y + 1);
-            Vector2 v4 = state4.getVelocity();
-            Vector2 v0 = state.getVelocity();
-            Vector2 v1 = Vector2.Zero;
-            if (mat.checkBounds(x, y - 1)) {
-                v1 = mat.getState(x, y - 1).getVelocity();
-            }
-            //if (v4.y < v0.y) {
-            return g * state4.getElement().density / state.getElement().density;
-            //}
-        }
-        return 0;
-    }
-    
-    //sucks
-    private static float getBuoyancyAccel(ElementMatrix mat, ElementState state, float g) {
-        int x = state.x;
-        int y = state.y;
-        //        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
-        //            return g * mat.getState(x, y + 1).getElement().density / state.getElement().density;
-        //        }
-        //        return 0;
-        float accel = 0;
-        int f = 0;
-        Direction[] ds = { Direction.Left, Direction.Right, Direction.Up };
-        for (Direction d : ds) {
-            int ax = x + d.dx;
-            int ay = y + d.dy;
-            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).getElement().isFixed) {
-                accel += mat.getState(ax, ay).getElement().density;
-                f += 1;
-            }
-        }
-        if (f == 0) {
-            return 0;
-        }
-        accel = g * accel / state.getElement().density * 1f / f;
-        return accel;
-    }
     
     private static void correctAcceleration(ElementState state, ElementMatrix mat, Vector2 acl, Direction d) {
         if (acl.x * d.dx + acl.y * d.dy > 0) {
@@ -86,8 +41,11 @@ public class ElementStateKinematics {
         Vector2 acl = state.getAcceleration();
         float g = 40;
         float dens = state.getElement().density;
-        if (dens != 1) {
-            acl.add(0, state.getElement().density > 1 ? -g : g);
+        float ref = mat.base().density;
+        // float dif = dens - ref;
+        // acl.add(0, -func(dif) * g);
+        if (dens != ref) {
+            acl.add(0, dens > ref ? -g : g);
         }
         if (!state.moving && !state.getElement().fluid) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
             for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {//or bring in some random x-errors?
@@ -142,7 +100,6 @@ public class ElementStateKinematics {
     //calculate the next move (check if there is an obstacle and the direction needs to change or find out with bresenham the next line tile)
     //check if there is enough time to do that move (if not, accumulate the left over time fraction). use an effective velocity in which friction is accounted for 
     //if enough time, do that move and subtract the needed time and apply the friction for that move, then go to step 3 
-    
     private static void move(float time, ElementMatrix mat, ElementState state) {
         Vector2 velocity = state.getVelocity();
         float speed = velocity.len();
@@ -196,17 +153,14 @@ public class ElementStateKinematics {
                     state.timepart = 0;
                     break outer;
                 }
-                MovementResult movResult = movement(mat, state, next, dir);
-                if (movResult == MovementResult.ChangedDirection) {
+                float movResult = movement(mat, state, next, dir);
+                if (movResult == Float.NEGATIVE_INFINITY) {
                     break inner;
                 }
-                if (movResult == MovementResult.Waiting) {
-                    state.timepart = time;
-                    break outer;
-                }
+                velocity.scl(movResult);
+                speed *= movResult;
                 velocity.scl(1 - friction);
-                speed = velocity.len();//hmm
-                //speed *= (1 - friction);
+                speed *= (1 - friction);
                 time -= timecost;
             }
         }
@@ -238,7 +192,7 @@ public class ElementStateKinematics {
         }
         float dens = state.getElement().density;
         float densityDiff = next == null ? -dens : next.getElement().density - dens;
-        return (densityDiff < 0 && dens > 1) || (densityDiff > 0 && dens < 1);
+        return (densityDiff < 0 && dens > mat.base().density) || (densityDiff > 0 && dens < mat.base().density);
         //return true;
         //return densityDiff < 0;
     }
@@ -257,21 +211,21 @@ public class ElementStateKinematics {
         }
     }
     
-    private static MovementResult movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
+    private static float movement(ElementMatrix mat, ElementState state, ElementState next, Direction dir) {
         Vector2 v = state.getVelocity();
         //try to not bounce of something which moves faster in the same direction
         //generally try to use deltav instead of state.vel -> both come with problems
         if (canSwitch(state, next, mat)) {
             applyPullAlong(mat, state, dir);
-            state.getVelocity().scl(0.9f);//this causes a left-tendency, weird
+            //state.getVelocity().scl(0.9f);//this causes a left-tendency, weird
             mat.switchStates(state, next);
-            return MovementResult.Passed;
+            return 1f;
         } else {
             Direction d;
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    d = state.getElement().density > 1 ? Direction.Down : Direction.Up;//oof
+                    d = state.getElement().density > mat.base().density ? Direction.Down : Direction.Up;//oof
                 } else {
                     d = mat.random() < 0.5 ? Direction.Left : Direction.Right;
                 }
@@ -294,7 +248,60 @@ public class ElementStateKinematics {
             } else if (d.dy != 0) {
                 v.y += d.dy * f;
             }
-            return MovementResult.ChangedDirection;
+            return Float.NEGATIVE_INFINITY;
         }
+    }
+    
+    //sucks
+    private static float getBuoyancy(ElementMatrix mat, ElementState state, float g) {
+        int x = state.x;
+        int y = state.y;
+        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
+            ElementState state4 = mat.getState(x, y + 1);
+            Vector2 v4 = state4.getVelocity();
+            Vector2 v0 = state.getVelocity();
+            Vector2 v1 = Vector2.Zero;
+            if (mat.checkBounds(x, y - 1)) {
+                v1 = mat.getState(x, y - 1).getVelocity();
+            }
+            //if (v4.y < v0.y) {
+            return g * state4.getElement().density / state.getElement().density;
+            //}
+        }
+        return 0;
+    }
+    
+    //sucks
+    private static float getBuoyancyAccel(ElementMatrix mat, ElementState state, float g) {
+        int x = state.x;
+        int y = state.y;
+        //        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
+        //            return g * mat.getState(x, y + 1).getElement().density / state.getElement().density;
+        //        }
+        //        return 0;
+        float accel = 0;
+        int f = 0;
+        Direction[] ds = { Direction.Left, Direction.Right, Direction.Up };
+        for (Direction d : ds) {
+            int ax = x + d.dx;
+            int ay = y + d.dy;
+            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).getElement().isFixed) {
+                accel += mat.getState(ax, ay).getElement().density;
+                f += 1;
+            }
+        }
+        if (f == 0) {
+            return 0;
+        }
+        accel = g * accel / state.getElement().density * 1f / f;
+        return accel;
+    }
+    
+    //yes, this is completely stupid
+    private static final double A = -1;
+    private static final double B = -Math.log(2.0);
+    
+    private static float func(float x) {
+        return (float) (A * Math.exp(x * B) + 1);
     }
 }

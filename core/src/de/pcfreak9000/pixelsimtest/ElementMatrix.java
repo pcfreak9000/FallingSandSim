@@ -53,6 +53,8 @@ public class ElementMatrix {
         }
     }
     
+    private int frame = 0;
+    
     public void update() {
         Collections.shuffle(indizes);
         Collections.shuffle(indizes2);
@@ -60,14 +62,19 @@ public class ElementMatrix {
             for (int i : indizes) {
                 ElementState t = matrix[i][j];
                 if (t != null) {
-                    t.update(this);
+                    t.update(this, frame);
                 }
             }
         }
+        frame++;
     }
     
     public double random() {
         return random.nextDouble();
+    }
+    
+    public Element base() {
+        return base;
     }
     
     public void switchStates(ElementState s0, ElementState s1) {
@@ -97,13 +104,14 @@ public class ElementMatrix {
     public void killState(int x, int y) {
         ElementState s = matrix[x][y];
         matrix[x][y] = base.createElementState(x, y);
+        activeStates.add(matrix[x][y]);
         if (s != null) {
             activeStates.removeValue(s, true);
         }
     }
     
     public void createState(int x, int y, Element e) {
-        if(matrix[x][y]!=null) {
+        if (matrix[x][y] != null) {
             killState(x, y);
         }
         matrix[x][y] = e.createElementState(x, y);
@@ -140,19 +148,28 @@ public class ElementMatrix {
     }
     
     public void render(SpriteBatch batch) {
-        for (ElementState t : activeStates) {
-            if (t.getColor() != null) {
-                batch.setColor(t.getColor());
-                //            Vector2 v = t.getVelocity();
-                //            if(v.len2()>100) {
-                //                batch.setColor(t.getColor());   
-                //            }else if(v.len2()>0&&v.len2()<=100) {
-                //                batch.setColor(Color.CORAL);
-                //            }else {
-                //                batch.setColor(Color.RED);
-                //            }
-                batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                ElementState t = getState(i, j);
+                if (t.getColor() != null) {
+                    batch.setColor(t.getColor());
+                    batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
+                }
             }
         }
+        //        for (ElementState t : activeStates) {
+        //            if (t.getColor() != null) {
+        //                batch.setColor(t.getColor());
+        //                //            Vector2 v = t.getVelocity();
+        //                //            if(v.len2()>100) {
+        //                //                batch.setColor(t.getColor());   
+        //                //            }else if(v.len2()>0&&v.len2()<=100) {
+        //                //                batch.setColor(Color.CORAL);
+        //                //            }else {
+        //                //                batch.setColor(Color.RED);
+        //                //            }
+        //                batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
+        //            }
+        //        }
     }
 }
