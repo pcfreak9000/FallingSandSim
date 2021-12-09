@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.RandomXS128;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class ElementMatrix {
@@ -153,6 +154,14 @@ public class ElementMatrix {
                 ElementState t = getState(i, j);
                 if (t.getColor() != null) {
                     batch.setColor(t.getColor());
+                    Vector2 v = t.getVelocity();
+                    if (v.len2() > 100) {
+                        batch.setColor(t.getColor());
+                    } else if (v.len2() > 0 && v.len2() <= 100) {
+                        batch.setColor(Color.CORAL);
+                    } else {
+                        batch.setColor(Color.RED);
+                    }
                     batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
                 }
             }

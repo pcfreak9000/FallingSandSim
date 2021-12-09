@@ -45,8 +45,9 @@ public class ElementStateKinematics {
         // float dif = dens - ref;
         // acl.add(0, -func(dif) * g);
         if (dens != ref) {
-            acl.add(0, dens > ref ? -g : g);
+            //acl.add(0, dens > ref ? -g : g);
         }
+        acl.add(0, -g);
         if (!state.moving && !state.getElement().fluid) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
             for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {//or bring in some random x-errors?
                 correctAcceleration(state, mat, acl, d);
@@ -192,7 +193,8 @@ public class ElementStateKinematics {
         }
         float dens = state.getElement().density;
         float densityDiff = next == null ? -dens : next.getElement().density - dens;
-        return (densityDiff < 0 && dens > mat.base().density) || (densityDiff > 0 && dens < mat.base().density);
+        return densityDiff < 0;
+        //return (densityDiff < 0 && dens > mat.base().density) || (densityDiff > 0 && dens < mat.base().density);
         //return true;
         //return densityDiff < 0;
     }
@@ -217,6 +219,7 @@ public class ElementStateKinematics {
         //generally try to use deltav instead of state.vel -> both come with problems
         if (canSwitch(state, next, mat)) {
             applyPullAlong(mat, state, dir);
+            next.getVelocity().add(state.getVelocity());
             //state.getVelocity().scl(0.9f);//this causes a left-tendency, weird
             mat.switchStates(state, next);
             return 1f;
@@ -225,7 +228,9 @@ public class ElementStateKinematics {
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    d = state.getElement().density > mat.base().density ? Direction.Down : Direction.Up;//oof
+                    d = mat.random() < 0.5 ? Direction.Down : Direction.Up;
+                    f *= 0.01f;
+                    //d = Direction.Down;//state.getElement().density > mat.base().density ? Direction.Down : Direction.Up;//oof
                 } else {
                     d = mat.random() < 0.5 ? Direction.Left : Direction.Right;
                 }

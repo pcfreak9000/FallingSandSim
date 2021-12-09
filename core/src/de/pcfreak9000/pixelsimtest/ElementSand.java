@@ -6,7 +6,7 @@ public class ElementSand extends ElementWater {
     
     public ElementSand() {
         this.c = Color.YELLOW;
-        this.density = 11f;
+        this.density = 50f;
         this.fluid = false;
     }
     
