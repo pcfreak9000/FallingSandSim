@@ -36,6 +36,8 @@ public class ElementStateKinematics {
         }
     }
     
+    //private static final ComponentMapper<MovementComponent> MM = new ComponentMapper<>(MovementComponent.class);
+    
     public static void apply(ElementState state, ElementMatrix mat) {
         Vector2 vel = state.getVelocity();
         Vector2 acl = state.getAcceleration();

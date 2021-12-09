@@ -10,8 +10,6 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.RandomXS128;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 
 public class ElementMatrix {
     
@@ -27,7 +25,6 @@ public class ElementMatrix {
     public static final int SIZE = 300;
     
     private ElementState[][] matrix = new ElementState[SIZE][SIZE];
-    private Array<ElementState> activeStates = new Array<>();
     
     private List<Integer> indizes = new ArrayList<>();
     private List<Integer> indizes2 = new ArrayList<>();
@@ -55,15 +52,20 @@ public class ElementMatrix {
     }
     
     private int frame = 0;
+    float maxtemp, mintemp;
     
     public void update() {
         Collections.shuffle(indizes);
         Collections.shuffle(indizes2);
+        maxtemp = Float.NEGATIVE_INFINITY;
+        mintemp = Float.POSITIVE_INFINITY;
         for (int j : indizes2) {
             for (int i : indizes) {
                 ElementState t = matrix[i][j];
                 if (t != null) {
                     t.update(this, frame);
+                    maxtemp = Math.max(maxtemp, t.getTemperature());
+                    mintemp = Math.min(mintemp, t.getTemperature());
                 }
             }
         }
@@ -103,20 +105,11 @@ public class ElementMatrix {
     }
     
     public void killState(int x, int y) {
-        ElementState s = matrix[x][y];
         matrix[x][y] = base.createElementState(x, y);
-        activeStates.add(matrix[x][y]);
-        if (s != null) {
-            activeStates.removeValue(s, true);
-        }
     }
     
     public void createState(int x, int y, Element e) {
-        if (matrix[x][y] != null) {
-            killState(x, y);
-        }
         matrix[x][y] = e.createElementState(x, y);
-        activeStates.add(matrix[x][y]);
     }
     
     public ElementState getState(int x, int y) {
@@ -127,7 +120,11 @@ public class ElementMatrix {
     }
     
     public boolean hasElement(int x, int y) {
-        return getState(x, y).getElement() != base;
+        ElementState s = getState(x, y);
+        if (s == null) {
+            return false;
+        }
+        return s.getElement() != base;
     }
     
     public void createCircle(int x, int y, int radius, Element e) {
@@ -149,36 +146,28 @@ public class ElementMatrix {
     }
     
     public void render(SpriteBatch batch) {
+        System.out.println(maxtemp);
+        System.out.println(mintemp);
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 ElementState t = getState(i, j);
                 if (t.getColor() != null) {
                     batch.setColor(t.getColor());
-                    Vector2 v = t.getVelocity();
-                    if (v.len2() > 100) {
-                        batch.setColor(t.getColor());
-                    } else if (v.len2() > 0 && v.len2() <= 100) {
-                        batch.setColor(Color.CORAL);
-                    } else {
-                        batch.setColor(Color.RED);
-                    }
+                    float temp = t.getTemperature();
+                    float rel = temp / (maxtemp-mintemp);
+                    batch.setColor(rel, 0, 1 - rel, 1);
+                    //batch.setColor(rel * 0.5f + act.r * 0.5f, 0 + act.g * 0.5f, (1 - rel) * 0.5f + act.b * 0.5f, 1);
+                    //                    Vector2 v = t.getVelocity();
+                    //                    if (v.len2() > 100) {
+                    //                        batch.setColor(t.getColor());
+                    //                    } else if (v.len2() > 0 && v.len2() <= 100) {
+                    //                        batch.setColor(Color.CORAL);
+                    //                    } else {
+                    //                        batch.setColor(Color.RED);
+                    //                    }
                     batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
                 }
             }
         }
-        //        for (ElementState t : activeStates) {
-        //            if (t.getColor() != null) {
-        //                batch.setColor(t.getColor());
-        //                //            Vector2 v = t.getVelocity();
-        //                //            if(v.len2()>100) {
-        //                //                batch.setColor(t.getColor());   
-        //                //            }else if(v.len2()>0&&v.len2()<=100) {
-        //                //                batch.setColor(Color.CORAL);
-        //                //            }else {
-        //                //                batch.setColor(Color.RED);
-        //                //            }
-        //                batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
-        //            }
-        //        }
     }
 }

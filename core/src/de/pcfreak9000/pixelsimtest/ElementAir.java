@@ -11,11 +11,12 @@ public class ElementAir extends Element {
     
     @Override
     public void update(ElementState state, ElementMatrix mat, int frame) {
-        if(state.lastframe == frame) {
+        if (state.lastframe == frame) {
             return;
         }
         state.lastframe = frame;
         ElementStateKinematics.apply(state, mat);
+        ThermoKinematics.apply(state, mat);
     }
     
     @Override

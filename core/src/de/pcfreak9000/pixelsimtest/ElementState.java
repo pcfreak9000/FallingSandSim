@@ -2,8 +2,13 @@ package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+
+import pcs.AComponent;
 
 public class ElementState {
+    
+    private Array<AComponent> comps = new Array<>();
     
     private Element element;
     int x, y;
@@ -11,13 +16,22 @@ public class ElementState {
     public boolean moving;
     
     public Color color;
-    //possibly move that into a subclass?
+    
+    protected int lastframe = 0;
+    
     private Vector2 velocity;
     private Vector2 acceleration;
     
     public float timepart;
     
-    public int lastframe=0;
+    public final float heattransfercoefficient = 1000;
+    public final float specificheat = 0.1f;
+    public float heatproduction;
+    public float heat;
+    
+    public float getTemperature() {
+        return heat / specificheat;
+    }
     
     public ElementState(int x, int y, Element element) {
         this.x = x;
@@ -28,8 +42,12 @@ public class ElementState {
         this.acceleration = new Vector2();
     }
     
-    public void update(ElementMatrix matrix, int frame) {
-        this.element.update(this, matrix, frame);
+    public void setComponent(AComponent comp) {
+        comps.insert(comp.id, comp);
+    }
+    
+    public AComponent getComponent(int id) {
+        return id >= comps.size ? null : comps.get(id);
     }
     
     public Vector2 getVelocity() {
@@ -38,6 +56,10 @@ public class ElementState {
     
     public Vector2 getAcceleration() {
         return acceleration;
+    }
+    
+    public void update(ElementMatrix matrix, int frame) {
+        this.element.update(this, matrix, frame);
     }
     
     public Color getColor() {
@@ -71,4 +93,5 @@ public class ElementState {
     public float getPulledAlongStrength() {
         return element.getPulledAlongStrength();
     }
+    
 }

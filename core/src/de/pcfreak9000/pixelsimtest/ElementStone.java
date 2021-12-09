@@ -10,8 +10,24 @@ public class ElementStone extends Element {
     }
     
     @Override
+    public void update(ElementState state, ElementMatrix mat, int frame) {
+        if(state.lastframe == frame) {
+            return;
+        }
+        state.lastframe = frame;
+        ThermoKinematics.apply(state, mat);
+    }
+    
+    @Override
+    public ElementState createElementState(int x, int y) {
+        ElementState s = super.createElementState(x, y);
+        s.heatproduction = 10;
+        return s;
+    }
+    
+    @Override
     public float getFriction() {
         return 0.5f;
     }
-
+    
 }
