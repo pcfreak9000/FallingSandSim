@@ -16,7 +16,6 @@ public class ElementAir extends Element {
         }
         state.lastframe = frame;
         ElementStateKinematics.apply(state, mat);
-        ThermoKinematics.apply(state, mat);
     }
     
     @Override

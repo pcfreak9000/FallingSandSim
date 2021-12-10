@@ -1,5 +1,6 @@
 package de.pcfreak9000.pixelsimtest;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 public class ElementStone extends Element {
@@ -11,17 +12,19 @@ public class ElementStone extends Element {
     
     @Override
     public void update(ElementState state, ElementMatrix mat, int frame) {
-        if(state.lastframe == frame) {
+        if (state.lastframe == frame) {
             return;
         }
         state.lastframe = frame;
-        ThermoKinematics.apply(state, mat);
+        ElementStateThermo.produceHeat(state, mat, Gdx.graphics.getDeltaTime());
+        ElementStateThermo.spreadHeat(state, mat, Gdx.graphics.getDeltaTime());
     }
     
     @Override
     public ElementState createElementState(int x, int y) {
         ElementState s = super.createElementState(x, y);
-        s.heatproduction = 10;
+        s.heattransfercoefficient = 1000;
+        s.specificheat = 1;
         return s;
     }
     

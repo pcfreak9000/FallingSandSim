@@ -11,6 +11,13 @@ public class ElementSand extends ElementWater {
     }
     
     @Override
+    public ElementState createElementState(int x, int y) {
+        ElementState s = super.createElementState(x, y);
+        s.heatproduction = 10;
+        return s;
+    }
+    
+    @Override
     public float getFriction() {
         return 0.9f;
     }

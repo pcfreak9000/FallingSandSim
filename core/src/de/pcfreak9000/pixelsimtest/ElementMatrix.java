@@ -112,6 +112,15 @@ public class ElementMatrix {
         matrix[x][y] = e.createElementState(x, y);
     }
     
+    public ElementState convertState(int x, int y, Element e) {
+        ElementState current = matrix[x][y];
+        ElementState newstate = e.createElementState(x, y);
+        newstate.timepart = current.timepart;
+        newstate.heat = current.getTemperature() * newstate.specificheat;
+        matrix[x][y] = newstate;
+        return newstate;
+    }
+    
     public ElementState getState(int x, int y) {
         if (checkBounds(x, y)) {
             return matrix[x][y];
@@ -148,14 +157,17 @@ public class ElementMatrix {
     public void render(SpriteBatch batch) {
         System.out.println(maxtemp);
         System.out.println(mintemp);
+        Color c = new Color();
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 ElementState t = getState(i, j);
                 if (t.getColor() != null) {
                     batch.setColor(t.getColor());
                     float temp = t.getTemperature();
-                    float rel = temp / (maxtemp-mintemp);
-                    batch.setColor(rel, 0, 1 - rel, 1);
+                    float rel = temp / (maxtemp - mintemp);
+                    c.set(rel, 0, 1 - rel, 1);
+                    c.add(t.getColor());
+                    //batch.setColor(c);
                     //batch.setColor(rel * 0.5f + act.r * 0.5f, 0 + act.g * 0.5f, (1 - rel) * 0.5f + act.b * 0.5f, 1);
                     //                    Vector2 v = t.getVelocity();
                     //                    if (v.len2() > 100) {

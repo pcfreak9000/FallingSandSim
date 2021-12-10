@@ -39,6 +39,8 @@ public class ElementStateKinematics {
     //private static final ComponentMapper<MovementComponent> MM = new ComponentMapper<>(MovementComponent.class);
     
     public static void apply(ElementState state, ElementMatrix mat) {
+        float dt = Gdx.graphics.getDeltaTime();
+        ElementStateThermo.produceHeat(state, mat, dt);
         Vector2 vel = state.getVelocity();
         Vector2 acl = state.getAcceleration();
         float g = 40;
@@ -58,9 +60,10 @@ public class ElementStateKinematics {
         vel.add(acl);
         acl.set(0, 0);
         if (vel.len2() > 0) {
-            float time = state.timepart + Gdx.graphics.getDeltaTime();
+            float time = state.timepart + dt;
             move(time, mat, state);
         } else {
+            ElementStateThermo.spreadHeat(state, mat, dt);
             state.timepart = 0;
         }
         
@@ -160,6 +163,7 @@ public class ElementStateKinematics {
                 if (movResult == Float.NEGATIVE_INFINITY) {
                     break inner;
                 }
+                ElementStateThermo.spreadHeat(state, mat, timecost);
                 velocity.scl(movResult);
                 speed *= movResult;
                 velocity.scl(1 - friction);
@@ -171,6 +175,9 @@ public class ElementStateKinematics {
             velocity.setZero();
             speed = 0;
             state.timepart = 0;
+        }
+        if (time > 0) {
+            ElementStateThermo.spreadHeat(state, mat, time);
         }
     }
     

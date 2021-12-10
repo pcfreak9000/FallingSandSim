@@ -2,11 +2,11 @@ package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.graphics.Color;
 
-public class ElementWater extends Element {
-    public ElementWater() {
-        this.density = 1.0001f;
-        this.c = Color.BLUE;
+public class ElementWaterVapor extends Element {
+    public ElementWaterVapor() {
+        this.density = 0.5f;
         this.fluid = true;
+        this.c = Color.CYAN;
     }
     
     @Override
@@ -16,14 +16,14 @@ public class ElementWater extends Element {
         }
         state.lastframe = frame;
         ElementStateKinematics.apply(state, mat);
-        if (state.getTemperature() > 200 && !(this instanceof ElementSand)) {
-            state.heat -= 5 / state.specificheat;
-            state = mat.convertState(state.x, state.y, PixelSimTest.watervapor);
+        if (state.getTemperature() < 100) {
+            state = mat.convertState(state.x, state.y, PixelSimTest.water);
+            state.heat += 5 / state.specificheat;
         }
     }
     
     @Override
     public float getFriction() {
-        return 0.05f;
+        return 0.01f;
     }
 }

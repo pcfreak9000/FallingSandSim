@@ -1,12 +1,8 @@
 package de.pcfreak9000.pixelsimtest;
 
-import com.badlogic.gdx.Gdx;
-
-public class ThermoKinematics {
+public class ElementStateThermo {
     
-    public static void apply(ElementState state, ElementMatrix mat) {
-        float dt = Gdx.graphics.getDeltaTime();
-        state.heat += state.heatproduction * dt;
+    public static void spreadHeat(ElementState state, ElementMatrix mat, float dt) {
         Direction[] ds = Direction.VONNEUMANN_NEIGHBOURS;
         float temp = state.getTemperature();
         Direction smallestTemp = Direction.Zero;
@@ -38,9 +34,6 @@ public class ThermoKinematics {
         if (cursmall > temp || index == 0) {
             return;
         }
-        if (transferHeatSum == 0) {
-            System.out.println("oof");
-        }
         ElementState coldestState = mat.getState(state.x + smallestTemp.dx, state.y + smallestTemp.dy);
         float maxheattransferByColdest = (state.heat * coldestState.specificheat
                 - coldestState.heat * state.specificheat) / (coldestState.specificheat + state.specificheat);
@@ -51,5 +44,9 @@ public class ThermoKinematics {
             state.heat -= deltaHeat;
             affected[i].heat += deltaHeat;
         }
+    }
+    
+    public static void produceHeat(ElementState state, ElementMatrix mat, float dt) {
+        state.heat += state.heatproduction * dt;
     }
 }

@@ -24,8 +24,8 @@ public class ElementState {
     
     public float timepart;
     
-    public final float heattransfercoefficient = 1000;
-    public final float specificheat = 0.1f;
+    public float heattransfercoefficient = 1000;
+    public float specificheat = 0.1f;
     public float heatproduction;
     public float heat;
     

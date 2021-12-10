@@ -20,9 +20,10 @@ public class PixelSimTest extends ApplicationAdapter {
     
     private Element air;
     private Element stone;
-    private Element water;
+    public static Element water;
     private Element sand;
-    private Element[] elements = new Element[4];
+    public static Element watervapor;
+    private Element[] elements = new Element[5];
     
     @Override
     public void create() {
@@ -52,6 +53,8 @@ public class PixelSimTest extends ApplicationAdapter {
         elements[2] = water;
         sand = new ElementSand();
         elements[3] = sand;
+        watervapor = new ElementWaterVapor();
+        elements[4] = watervapor;
     }
     
     private static class Spout {
