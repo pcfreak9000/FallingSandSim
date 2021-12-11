@@ -155,8 +155,8 @@ public class ElementMatrix {
     }
     
     public void render(SpriteBatch batch) {
-        System.out.println(maxtemp);
-        System.out.println(mintemp);
+       // System.out.println(maxtemp);
+       // System.out.println(mintemp);
         Color c = new Color();
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {

@@ -2,14 +2,10 @@ package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-
-import pcs.AComponent;
 
 public class ElementState {
     
-    private Array<AComponent> comps = new Array<>();
-    
+   
     private Element element;
     int x, y;
     
@@ -21,8 +17,7 @@ public class ElementState {
     
     private Vector2 velocity;
     private Vector2 acceleration;
-    
-    public float timepart;
+    float timepart;
     
     public float heattransfercoefficient = 1000;
     public float specificheat = 0.1f;
@@ -40,14 +35,6 @@ public class ElementState {
         this.color = element.c;
         this.velocity = new Vector2();
         this.acceleration = new Vector2();
-    }
-    
-    public void setComponent(AComponent comp) {
-        comps.insert(comp.id, comp);
-    }
-    
-    public AComponent getComponent(int id) {
-        return id >= comps.size ? null : comps.get(id);
     }
     
     public Vector2 getVelocity() {

@@ -22,7 +22,7 @@ public class ElementStateThermo {
                     smallestTemp = d;
                 }
                 if (temp - stem > 0.0001f) {
-                    float effectiveLambda = 0.5f * (state.heattransfercoefficient + side.heattransfercoefficient);//hmmm
+                    float effectiveLambda = Math.min(state.heattransfercoefficient, side.heattransfercoefficient);
                     float local = effectiveLambda * (temp - stem);
                     transfer[index] = local * dt;
                     transferHeatSum += transfer[index];

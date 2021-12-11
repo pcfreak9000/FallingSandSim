@@ -24,7 +24,7 @@ public class ComponentMapper<C extends AComponent> {
     }
     
     public C get(ElementState state) {
-        return (C) state.getComponent(id);
+      //  return (C) state.getComponent(id);
     }
     
 }

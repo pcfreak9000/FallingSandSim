@@ -18,7 +18,7 @@ public class ElementWaterVapor extends Element {
         ElementStateKinematics.apply(state, mat);
         if (state.getTemperature() < 100) {
             state = mat.convertState(state.x, state.y, PixelSimTest.water);
-            state.heat += 5 / state.specificheat;
+            //state.heat += 5 / state.specificheat;
         }
     }
     

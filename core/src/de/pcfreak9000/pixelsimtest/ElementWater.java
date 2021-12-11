@@ -17,7 +17,7 @@ public class ElementWater extends Element {
         state.lastframe = frame;
         ElementStateKinematics.apply(state, mat);
         if (state.getTemperature() > 200 && !(this instanceof ElementSand)) {
-            state.heat -= 5 / state.specificheat;
+            //state.heat -= 5 / state.specificheat;
             state = mat.convertState(state.x, state.y, PixelSimTest.watervapor);
         }
     }

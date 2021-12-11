@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ElementStateKinematics {
     
-    private static final int MAX_ITERATIONS = 30;
+    private static final int MAX_ITERATIONS = 7;
     
     private static enum MovementResult {
         Passed, ChangedDirection, Waiting;
@@ -237,8 +237,11 @@ public class ElementStateKinematics {
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    d = mat.random() < 0.5 ? Direction.Down : Direction.Up;
-                    f *= 0.01f;
+                    //d = Direction.Down;
+                    d = mat.random() < 0.99 ? Direction.Down : Direction.Up;
+                    if (d == Direction.Up) {
+                        f *= 0.01f;
+                    }
                     //d = Direction.Down;//state.getElement().density > mat.base().density ? Direction.Down : Direction.Up;//oof
                 } else {
                     d = mat.random() < 0.5 ? Direction.Left : Direction.Right;
