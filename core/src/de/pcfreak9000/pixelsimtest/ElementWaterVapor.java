@@ -4,26 +4,22 @@ import com.badlogic.gdx.graphics.Color;
 
 public class ElementWaterVapor extends Element {
     public ElementWaterVapor() {
+        this.colorDef = IColorDef.cnst(Color.CYAN);
+        this.fluidLike = true;
         this.density = 0.5f;
-        this.fluid = true;
-        this.c = Color.CYAN;
+        this.friction = 0.01f;
+        this.frictionInternal = 0;
+        this.heatTransferCoefficient = 1000;
+        this.specificHeat = 0.1f;
     }
     
     @Override
     public void update(ElementState state, ElementMatrix mat, int frame) {
-        if (state.lastframe == frame) {
-            return;
-        }
-        state.lastframe = frame;
-        ElementStateKinematics.apply(state, mat);
+        super.update(state, mat, frame);
         if (state.getTemperature() < 100) {
             state = mat.convertState(state.x, state.y, PixelSimTest.water);
             //state.heat += 5 / state.specificheat;
         }
     }
     
-    @Override
-    public float getFriction() {
-        return 0.01f;
-    }
 }

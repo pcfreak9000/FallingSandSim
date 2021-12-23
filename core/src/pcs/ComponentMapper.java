@@ -2,8 +2,6 @@ package pcs;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
 
-import de.pcfreak9000.pixelsimtest.ElementState;
-
 public class ComponentMapper<C extends AComponent> {
     private static int next = 0;
     private static ObjectIntMap<Class<? extends AComponent>> mappings = new ObjectIntMap<>();
@@ -23,8 +21,8 @@ public class ComponentMapper<C extends AComponent> {
         this.id = getId(component);
     }
     
-    public C get(ElementState state) {
+    //public C get(ElementState state) {
       //  return (C) state.getComponent(id);
-    }
+    //}
     
 }

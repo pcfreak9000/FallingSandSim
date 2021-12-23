@@ -1,36 +1,75 @@
 package de.pcfreak9000.pixelsimtest;
 
-import com.badlogic.gdx.graphics.Color;
-
 public abstract class Element {
     
-    public float density;
-    public boolean isFixed;
-    public boolean fluid;
-    
-    public Color c;
+    protected float density = 1;
+    protected float friction = 0;
+    protected float frictionInternal = 0;
+    protected float pulledAlongChance = 0;
+    protected float pulledAlongStrength = 0;
+    protected float heatTransferCoefficient = 0;
+    protected float specificHeat = 1;
+    protected float heatProduction = 0;
+    protected boolean fixed = false;
+    protected boolean fluidLike = false;
+    protected IColorDef colorDef = IColorDef.NONE;
     
     public void update(ElementState state, ElementMatrix mat, int frame) {
-        
+        if (state.alreadyUpdated(frame)) {
+            return;
+        }
+        if (state.isFixed()) {
+            ElementStateThermo.apply(state, mat, frame);
+        } else {
+            ElementStateKinematics.apply(state, mat);
+        }
     }
     
     public ElementState createElementState(int x, int y) {
         return new ElementState(x, y, this);
     }
     
+    public float getDensity() {
+        return density;
+    }
+    
     public float getFriction() {
-        return 0;
+        return friction;
     }
     
     public float getInternalFriction() {
-        return getFriction();
+        return frictionInternal;
     }
     
     public float getPulledAlongChance() {
-        return 0;
+        return pulledAlongChance;
     }
     
     public float getPulledAlongStrength() {
-        return 0;
+        return pulledAlongStrength;
+    }
+    
+    public float getHeatTransferCoefficient() {
+        return heatTransferCoefficient;
+    }
+    
+    public float getSpecificHeat() {
+        return specificHeat;
+    }
+    
+    public float getHeatProduction() {
+        return heatProduction;
+    }
+    
+    public boolean isFixed() {
+        return fixed;
+    }
+    
+    public boolean isFluidLike() {
+        return fluidLike;
+    }
+    
+    public IColorDef getColorDef() {
+        return colorDef;
     }
 }

@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ElementStateKinematics {
     
-    private static final int MAX_ITERATIONS = 7;
+    private static final int MAX_ITERATIONS = 3;
     
     private static enum MovementResult {
         Passed, ChangedDirection, Waiting;
@@ -44,15 +44,8 @@ public class ElementStateKinematics {
         Vector2 vel = state.getVelocity();
         Vector2 acl = state.getAcceleration();
         float g = 40;
-        float dens = state.getElement().density;
-        float ref = mat.base().density;
-        // float dif = dens - ref;
-        // acl.add(0, -func(dif) * g);
-        if (dens != ref) {
-            //acl.add(0, dens > ref ? -g : g);
-        }
         acl.add(0, -g);
-        if (!state.moving && !state.getElement().fluid) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
+        if (!state.isFluidLike()) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
             for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {//or bring in some random x-errors?
                 correctAcceleration(state, mat, acl, d);
             }
@@ -197,11 +190,11 @@ public class ElementStateKinematics {
         if (next == null) {
             return false;
         }
-        if (next.getElement().isFixed) {
+        if (next.isFixed()) {
             return false;
         }
-        float dens = state.getElement().density;
-        float densityDiff = next == null ? -dens : next.getElement().density - dens;
+        float dens = state.getDensity();
+        float densityDiff = next == null ? -dens : next.getDensity() - dens;
         return densityDiff < 0;
         //return (densityDiff < 0 && dens > mat.base().density) || (densityDiff > 0 && dens < mat.base().density);
         //return true;
@@ -214,7 +207,7 @@ public class ElementStateKinematics {
             int x = state.getX() + d.dx;
             int y = state.getY() + d.dy;
             ElementState side = mat.getState(x, y);
-            if (side != null && !side.getElement().isFixed && !side.getElement().fluid) {
+            if (side != null && !side.isFixed() && !side.isFluidLike()) {
                 if (mat.random() < side.getPulledAlongChance()) {
                     side.getVelocity().mulAdd(state.getVelocity(), side.getPulledAlongStrength());//use a symmetric approach or just the state and not side for the strength?
                 }
@@ -228,7 +221,7 @@ public class ElementStateKinematics {
         //generally try to use deltav instead of state.vel -> both come with problems
         if (canSwitch(state, next, mat)) {
             applyPullAlong(mat, state, dir);
-            next.getVelocity().add(state.getVelocity());
+            next.getVelocity().mulAdd(state.getVelocity(), -0.1f);
             //state.getVelocity().scl(0.9f);//this causes a left-tendency, weird
             mat.switchStates(state, next);
             return 1f;
@@ -273,7 +266,7 @@ public class ElementStateKinematics {
     private static float getBuoyancy(ElementMatrix mat, ElementState state, float g) {
         int x = state.x;
         int y = state.y;
-        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
+        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).isFixed()) {
             ElementState state4 = mat.getState(x, y + 1);
             Vector2 v4 = state4.getVelocity();
             Vector2 v0 = state.getVelocity();
@@ -282,7 +275,7 @@ public class ElementStateKinematics {
                 v1 = mat.getState(x, y - 1).getVelocity();
             }
             //if (v4.y < v0.y) {
-            return g * state4.getElement().density / state.getElement().density;
+            return g * state4.getDensity() / state.getDensity();
             //}
         }
         return 0;
@@ -302,15 +295,15 @@ public class ElementStateKinematics {
         for (Direction d : ds) {
             int ax = x + d.dx;
             int ay = y + d.dy;
-            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).getElement().isFixed) {
-                accel += mat.getState(ax, ay).getElement().density;
+            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).isFixed()) {
+                accel += mat.getState(ax, ay).getDensity();
                 f += 1;
             }
         }
         if (f == 0) {
             return 0;
         }
-        accel = g * accel / state.getElement().density * 1f / f;
+        accel = g * accel / state.getDensity() * 1f / f;
         return accel;
     }
     

@@ -68,6 +68,7 @@ public class PixelSimTest extends ApplicationAdapter {
     
     @Override
     public void render() {
+        long t0 = System.currentTimeMillis();
         if (current == null) {
             current = water;
         }
@@ -111,15 +112,21 @@ public class PixelSimTest extends ApplicationAdapter {
         for (Spout s : spouts) {
             mat.createCircle(s.x, s.y, s.rad, s.element);
         }
+        long t1 = System.currentTimeMillis();
         for (int i = 0; i < 1; i++) {
             mat.update();
         }
+        long t2 = System.currentTimeMillis();
         ScreenUtils.clear(0, 0, 0, 1);
         vp.apply();
         batch.setProjectionMatrix(vp.getCamera().combined);
         batch.begin();
         mat.render(batch);
         batch.end();
+        long t3 = System.currentTimeMillis();
+        System.out.println("Stuff time: " + (t1 - t0));
+        System.out.println("Update time: " + (t2 - t1));
+        System.out.println("Render time: " + (t3 - t2));
     }
     
     @Override

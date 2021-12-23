@@ -22,7 +22,8 @@ public class ElementStateThermo {
                     smallestTemp = d;
                 }
                 if (temp - stem > 0.0001f) {
-                    float effectiveLambda = Math.min(state.heattransfercoefficient, side.heattransfercoefficient);
+                    float effectiveLambda = Math.min(state.getHeatTransferCoefficient(),
+                            side.getHeatTransferCoefficient());
                     float local = effectiveLambda * (temp - stem);
                     transfer[index] = local * dt;
                     transferHeatSum += transfer[index];
@@ -35,18 +36,24 @@ public class ElementStateThermo {
             return;
         }
         ElementState coldestState = mat.getState(state.x + smallestTemp.dx, state.y + smallestTemp.dy);
-        float maxheattransferByColdest = (state.heat * coldestState.specificheat
-                - coldestState.heat * state.specificheat) / (coldestState.specificheat + state.specificheat);
+        float maxheattransferByColdest = (state.getHeat() * coldestState.getSpecificHeat()
+                - coldestState.getHeat() * state.getSpecificHeat())
+                / (coldestState.getSpecificHeat() + state.getSpecificHeat());
         float maxheatexchanged = Math.min(transferHeatSum, maxheattransferByColdest);
         for (int i = 0; i < index; i++) {
             float relative = transfer[i] / transferHeatSum;
             float deltaHeat = relative * maxheatexchanged;
-            state.heat -= deltaHeat;
-            affected[i].heat += deltaHeat;
+            state.setHeat(state.getHeat() - deltaHeat);
+            affected[i].setHeat(affected[i].getHeat() + deltaHeat);
         }
     }
     
     public static void produceHeat(ElementState state, ElementMatrix mat, float dt) {
-        state.heat += state.heatproduction * dt;
+        state.setHeat(state.getHeat() + state.getHeatProduction() * dt);
+    }
+    
+    public static void apply(ElementState state, ElementMatrix mat, float dt) {
+        produceHeat(state, mat, dt);
+        spreadHeat(state, mat, dt);
     }
 }

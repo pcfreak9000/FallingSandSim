@@ -2,33 +2,18 @@ package de.pcfreak9000.pixelsimtest;
 
 import com.badlogic.gdx.graphics.Color;
 
-public class ElementSand extends ElementWater {
+public class ElementSand extends Element {
     
     public ElementSand() {
-        this.c = Color.YELLOW;
-        this.density = 50f;
-        this.fluid = false;
+        this.colorDef = IColorDef.cnst(Color.YELLOW);
+        this.density = 50;
+        this.friction = 0.9f;
+        this.frictionInternal = 0.9f;
+        this.heatProduction = 10;
+        this.pulledAlongChance = 0.07f;
+        this.pulledAlongStrength = 0.3f;
+        this.heatTransferCoefficient = 1000;
+        this.specificHeat = 0.1f;
     }
     
-    @Override
-    public ElementState createElementState(int x, int y) {
-        ElementState s = super.createElementState(x, y);
-        s.heatproduction = 10;
-        return s;
-    }
-    
-    @Override
-    public float getFriction() {
-        return 0.9f;
-    }
-    
-    @Override
-    public float getPulledAlongChance() {
-        return 0.07f;
-    }
-    
-    @Override
-    public float getPulledAlongStrength() {
-        return 0.3f;
-    }
 }

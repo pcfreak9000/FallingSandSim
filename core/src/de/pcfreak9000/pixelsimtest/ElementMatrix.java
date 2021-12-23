@@ -22,7 +22,7 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
-    public static final int SIZE = 300;
+    public static final int SIZE = 150;
     
     private ElementState[][] matrix = new ElementState[SIZE][SIZE];
     
@@ -55,8 +55,8 @@ public class ElementMatrix {
     float maxtemp, mintemp;
     
     public void update() {
-        Collections.shuffle(indizes);
-        Collections.shuffle(indizes2);
+        //Collections.shuffle(indizes);
+        //Collections.shuffle(indizes2);
         maxtemp = Float.NEGATIVE_INFINITY;
         mintemp = Float.POSITIVE_INFINITY;
         for (int j : indizes2) {
@@ -93,7 +93,7 @@ public class ElementMatrix {
         if (s0.x != x0 || s0.y != y0 || s1.x != x1 || s1.y != y1) {
             throw new RuntimeException();
         }
-        if (s0.getElement().isFixed || s1.getElement().isFixed) {
+        if (s0.isFixed() || s1.isFixed()) {
             throw new RuntimeException();
         }
         matrix[x0][y0] = s1;
@@ -116,7 +116,7 @@ public class ElementMatrix {
         ElementState current = matrix[x][y];
         ElementState newstate = e.createElementState(x, y);
         newstate.timepart = current.timepart;
-        newstate.heat = current.getTemperature() * newstate.specificheat;
+        newstate.setHeat(current.getTemperature() * newstate.getSpecificHeat());
         matrix[x][y] = newstate;
         return newstate;
     }
@@ -155,8 +155,8 @@ public class ElementMatrix {
     }
     
     public void render(SpriteBatch batch) {
-       // System.out.println(maxtemp);
-       // System.out.println(mintemp);
+        // System.out.println(maxtemp);
+        // System.out.println(mintemp);
         Color c = new Color();
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
