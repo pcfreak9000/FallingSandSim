@@ -13,6 +13,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import de.pcfreak9000.pixelsimtest.elements.ElementAir;
+import de.pcfreak9000.pixelsimtest.elements.ElementSand;
+import de.pcfreak9000.pixelsimtest.elements.ElementStone;
+import de.pcfreak9000.pixelsimtest.elements.ElementWater;
+import de.pcfreak9000.pixelsimtest.elements.ElementWaterVapor;
+
 public class PixelSimTest extends ApplicationAdapter {
     private SpriteBatch batch;
     private ElementMatrix mat;

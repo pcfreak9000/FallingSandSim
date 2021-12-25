@@ -10,6 +10,6 @@ public interface IColorDef {
     
     public static final IColorDef NONE = (x, y) -> null;
     
-    Color get(int x, int y);
+    Color getColor(int x, int y);
     
 }

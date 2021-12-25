@@ -10,10 +10,6 @@ public class ElementStateKinematics {
     
     private static final int MAX_ITERATIONS = 3;
     
-    private static enum MovementResult {
-        Passed, ChangedDirection, Waiting;
-    }
-    
     //kk internal friction stuff 
     //buoyancy
     //configure stuff
@@ -262,56 +258,4 @@ public class ElementStateKinematics {
         }
     }
     
-    //sucks
-    private static float getBuoyancy(ElementMatrix mat, ElementState state, float g) {
-        int x = state.x;
-        int y = state.y;
-        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).isFixed()) {
-            ElementState state4 = mat.getState(x, y + 1);
-            Vector2 v4 = state4.getVelocity();
-            Vector2 v0 = state.getVelocity();
-            Vector2 v1 = Vector2.Zero;
-            if (mat.checkBounds(x, y - 1)) {
-                v1 = mat.getState(x, y - 1).getVelocity();
-            }
-            //if (v4.y < v0.y) {
-            return g * state4.getDensity() / state.getDensity();
-            //}
-        }
-        return 0;
-    }
-    
-    //sucks
-    private static float getBuoyancyAccel(ElementMatrix mat, ElementState state, float g) {
-        int x = state.x;
-        int y = state.y;
-        //        if (mat.checkBounds(x, y + 1) && !mat.getState(x, y + 1).getElement().isFixed) {
-        //            return g * mat.getState(x, y + 1).getElement().density / state.getElement().density;
-        //        }
-        //        return 0;
-        float accel = 0;
-        int f = 0;
-        Direction[] ds = { Direction.Left, Direction.Right, Direction.Up };
-        for (Direction d : ds) {
-            int ax = x + d.dx;
-            int ay = y + d.dy;
-            if (mat.checkBounds(ax, ay) && !mat.getState(ax, ay).isFixed()) {
-                accel += mat.getState(ax, ay).getDensity();
-                f += 1;
-            }
-        }
-        if (f == 0) {
-            return 0;
-        }
-        accel = g * accel / state.getDensity() * 1f / f;
-        return accel;
-    }
-    
-    //yes, this is completely stupid
-    private static final double A = -1;
-    private static final double B = -Math.log(2.0);
-    
-    private static float func(float x) {
-        return (float) (A * Math.exp(x * B) + 1);
-    }
 }

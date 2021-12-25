@@ -6,24 +6,27 @@ import com.badlogic.gdx.math.Vector2;
 public class ElementState {
     
     private Element element;
-    protected int lastframe = 0;
     
-    //hmm
-    public Color color;
+    //can the color system be improved? a Color object however seems to be too much
+    private float colorPacked;
     
+    //Do v and a need to be vectors?
     private Vector2 velocity;
     private Vector2 acceleration;
     
-    int x, y;
-    float timepart;
-    
     private float heat;
+    
+    protected int lastframe = 0;
+    
+    protected float timepart;
+    int x, y;
     
     public ElementState(int x, int y, Element element) {
         this.x = x;
         this.y = y;
         this.element = element;
-        this.color = element.getColorDef().get(x, y);
+        Color color = element.getColorDef().getColor(x, y);
+        this.colorPacked = color == null ? Float.NaN : color.toFloatBits();
         this.velocity = new Vector2();
         this.acceleration = new Vector2();
     }
@@ -46,8 +49,12 @@ public class ElementState {
         this.element.update(this, matrix, frame);
     }
     
-    public Color getColor() {
-        return color;
+    public float getColorPacked() {
+        return colorPacked;
+    }
+    
+    public boolean hasColor() {
+        return !Float.isNaN(colorPacked);
     }
     
     public Element getElement() {

@@ -83,17 +83,5 @@ public enum Direction {
             return null;
         }
     }
-    
-    //    public static Direction ofAngle(double angle) {
-    //        if (angle >= -Math.PI / 4 && angle < Math.PI / 4) {
-    //            return Direction.Right;
-    //        } else if (angle >= Math.PI / 4 && angle < Math.PI / 4 * 3) {
-    //            return Direction.Up;
-    //        } else if (angle <= -Math.PI / 4 * 3 || angle >= Math.PI / 4 * 3) {
-    //            return Direction.Left;
-    //        } else if (angle < -Math.PI / 4 && angle >= -Math.PI / 4 * 3) {
-    //            return Direction.Down;
-    //        }
-    //        throw new IllegalArgumentException();
-    //    }
+
 }

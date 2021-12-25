@@ -2,6 +2,8 @@ package de.pcfreak9000.pixelsimtest;
 
 public class ElementStateThermo {
     
+    private static final float MIN_TEMP_DELTA = 0.0001f;
+    
     public static void spreadHeat(ElementState state, ElementMatrix mat, float dt) {
         Direction[] ds = Direction.VONNEUMANN_NEIGHBOURS;
         float temp = state.getTemperature();
@@ -21,7 +23,7 @@ public class ElementStateThermo {
                     cursmall = stem;
                     smallestTemp = d;
                 }
-                if (temp - stem > 0.0001f) {
+                if (temp - stem > MIN_TEMP_DELTA) {
                     float effectiveLambda = Math.min(state.getHeatTransferCoefficient(),
                             side.getHeatTransferCoefficient());
                     float local = effectiveLambda * (temp - stem);

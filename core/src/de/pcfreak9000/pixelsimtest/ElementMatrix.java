@@ -46,26 +46,18 @@ public class ElementMatrix {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 createState(i, j, base);
-                //matrix[i][j] = base.createElementState(i, j);
             }
         }
     }
     
     private int frame = 0;
-    float maxtemp, mintemp;
     
     public void update() {
-        //Collections.shuffle(indizes);
-        //Collections.shuffle(indizes2);
-        maxtemp = Float.NEGATIVE_INFINITY;
-        mintemp = Float.POSITIVE_INFINITY;
         for (int j : indizes2) {
             for (int i : indizes) {
                 ElementState t = matrix[i][j];
                 if (t != null) {
                     t.update(this, frame);
-                    maxtemp = Math.max(maxtemp, t.getTemperature());
-                    mintemp = Math.min(mintemp, t.getTemperature());
                 }
             }
         }
@@ -155,28 +147,11 @@ public class ElementMatrix {
     }
     
     public void render(SpriteBatch batch) {
-        // System.out.println(maxtemp);
-        // System.out.println(mintemp);
-        Color c = new Color();
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 ElementState t = getState(i, j);
-                if (t.getColor() != null) {
-                    batch.setColor(t.getColor());
-                    float temp = t.getTemperature();
-                    float rel = temp / (maxtemp - mintemp);
-                    c.set(rel, 0, 1 - rel, 1);
-                    c.add(t.getColor());
-                    //batch.setColor(c);
-                    //batch.setColor(rel * 0.5f + act.r * 0.5f, 0 + act.g * 0.5f, (1 - rel) * 0.5f + act.b * 0.5f, 1);
-                    //                    Vector2 v = t.getVelocity();
-                    //                    if (v.len2() > 100) {
-                    //                        batch.setColor(t.getColor());
-                    //                    } else if (v.len2() > 0 && v.len2() <= 100) {
-                    //                        batch.setColor(Color.CORAL);
-                    //                    } else {
-                    //                        batch.setColor(Color.RED);
-                    //                    }
+                if (t.hasColor()) {
+                    batch.setPackedColor(t.getColorPacked());
                     batch.draw(WHITE, t.getX(), t.getY(), 1, 1);
                 }
             }

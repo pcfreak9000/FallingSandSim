@@ -1,6 +1,12 @@
-package de.pcfreak9000.pixelsimtest;
+package de.pcfreak9000.pixelsimtest.elements;
 
 import com.badlogic.gdx.graphics.Color;
+
+import de.pcfreak9000.pixelsimtest.Element;
+import de.pcfreak9000.pixelsimtest.ElementMatrix;
+import de.pcfreak9000.pixelsimtest.ElementState;
+import de.pcfreak9000.pixelsimtest.IColorDef;
+import de.pcfreak9000.pixelsimtest.PixelSimTest;
 
 public class ElementWater extends Element {
     public ElementWater() {
@@ -18,7 +24,7 @@ public class ElementWater extends Element {
         super.update(state, mat, frame);
         if (state.getTemperature() > 200) {
             //state.heat -= 5 / state.specificheat;
-            state = mat.convertState(state.x, state.y, PixelSimTest.watervapor);
+            state = mat.convertState(state.getX(), state.getY(), PixelSimTest.watervapor);
         }
     }
 }

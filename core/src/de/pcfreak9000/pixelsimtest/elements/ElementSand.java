@@ -1,6 +1,9 @@
-package de.pcfreak9000.pixelsimtest;
+package de.pcfreak9000.pixelsimtest.elements;
 
 import com.badlogic.gdx.graphics.Color;
+
+import de.pcfreak9000.pixelsimtest.Element;
+import de.pcfreak9000.pixelsimtest.IColorDef;
 
 public class ElementSand extends Element {
     
