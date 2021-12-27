@@ -1,9 +1,5 @@
 package de.pcfreak9000.pixelsimtest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -22,27 +18,25 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
-    public static final int SIZE = 150;
+    public static final int SIZE = 300;
     
-    private ElementState[][] matrix = new ElementState[SIZE][SIZE];
+    private static final int[] xs = Chunk.shuffledIndizes(Chunk.toChunk(SIZE) + 1);
+    private static final int[] ys = Chunk.shuffledIndizes(Chunk.toChunk(SIZE) + 1);
     
-    private List<Integer> indizes = new ArrayList<>();
-    private List<Integer> indizes2 = new ArrayList<>();
+    private Chunk[][] chunks = new Chunk[Chunk.toChunk(SIZE) + 1][Chunk.toChunk(SIZE) + 1];
     
     private Element base;
+    private int frame = 0;
     
     private RandomXS128 random = new RandomXS128();
     
     public ElementMatrix(Element base) {
         this.base = base;
-        for (int i = 0; i < SIZE; i++) {
-            indizes.add(i);
+        for (int i = 0; i < chunks.length; i++) {
+            for (int j = 0; j < chunks[i].length; j++) {
+                chunks[i][j] = new Chunk(i * Chunk.CHUNK_SIZE, j * Chunk.CHUNK_SIZE);
+            }
         }
-        Collections.shuffle(indizes);
-        for (int i = 0; i < SIZE; i++) {
-            indizes2.add(i);
-        }
-        Collections.shuffle(indizes2);
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 createState(i, j, base);
@@ -50,17 +44,17 @@ public class ElementMatrix {
         }
     }
     
-    private int frame = 0;
-    
     public void update() {
-        for (int j : indizes2) {
-            for (int i : indizes) {
-                ElementState t = matrix[i][j];
-                if (t != null) {
-                    t.update(this, frame);
-                }
+        for (int i : xs) {
+            for (int j : ys) {
+                chunks[i][j].update(this, frame);
             }
         }
+        //        for (int i = 0; i < chunks.length; i++) {
+        //            for (int j = 0; j < chunks[i].length; j++) {
+        //                chunks[i][j].update(this, frame);
+        //            }
+        //        }
         frame++;
     }
     
@@ -79,43 +73,51 @@ public class ElementMatrix {
         switchStates(s0.x, s0.y, s1.x, s1.y);
     }
     
+    private ElementState get(int x, int y) {
+        int cx = Chunk.toChunk(x);
+        int cy = Chunk.toChunk(y);
+        return chunks[cx][cy].get(x, y);
+    }
+    
+    private void set(int x, int y, ElementState state) {
+        int cx = Chunk.toChunk(x);
+        int cy = Chunk.toChunk(y);
+        chunks[cx][cy].set(x, y, state);
+    }
+    
     public void switchStates(int x0, int y0, int x1, int y1) {
-        ElementState s0 = matrix[x0][y0];
-        ElementState s1 = matrix[x1][y1];
+        ElementState s0 = get(x0, y0);
+        ElementState s1 = get(x1, y1);
         if (s0.x != x0 || s0.y != y0 || s1.x != x1 || s1.y != y1) {
-            throw new RuntimeException();
+            throw new RuntimeException("Mismatch between internal- and matrixcoordinates");
         }
         if (s0.isFixed() || s1.isFixed()) {
-            throw new RuntimeException();
+            throw new RuntimeException("Can't switch fixed states");
         }
-        matrix[x0][y0] = s1;
-        s1.x = x0;
-        s1.y = y0;
-        matrix[x1][y1] = s0;
-        s0.x = x1;
-        s0.y = y1;
+        set(x0, y0, s1);
+        set(x1, y1, s0);
     }
     
     public void killState(int x, int y) {
-        matrix[x][y] = base.createElementState(x, y);
+        set(x, y, base.createElementState(x, y));
     }
     
     public void createState(int x, int y, Element e) {
-        matrix[x][y] = e.createElementState(x, y);
+        set(x, y, e.createElementState(x, y));
     }
     
     public ElementState convertState(int x, int y, Element e) {
-        ElementState current = matrix[x][y];
+        ElementState current = get(x, y);
         ElementState newstate = e.createElementState(x, y);
         newstate.timepart = current.timepart;
         newstate.setHeat(current.getTemperature() * newstate.getSpecificHeat());
-        matrix[x][y] = newstate;
+        set(x, y, newstate);
         return newstate;
     }
     
     public ElementState getState(int x, int y) {
         if (checkBounds(x, y)) {
-            return matrix[x][y];
+            return get(x, y);
         }
         return null;
     }

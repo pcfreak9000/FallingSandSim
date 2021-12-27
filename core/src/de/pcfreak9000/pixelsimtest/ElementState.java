@@ -5,6 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ElementState {
     
+    public static final float PIXEL_SIZE_METERS = 0.05f;
+    //public static final float PIXEL_SIZE_SSP = 3f;
+    
     private Element element;
     
     //can the color system be improved? a Color object however seems to be too much

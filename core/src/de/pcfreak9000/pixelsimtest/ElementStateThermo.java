@@ -3,9 +3,11 @@ package de.pcfreak9000.pixelsimtest;
 public class ElementStateThermo {
     
     private static final float MIN_TEMP_DELTA = 0.0001f;
+    private static final float HEAT_FLOW_COEFFICIENT = ElementState.PIXEL_SIZE_METERS; //A/d
+    
+    private static final Direction[] SPREAD_DIRECTIONS = Direction.VONNEUMANN_NEIGHBOURS;
     
     public static void spreadHeat(ElementState state, ElementMatrix mat, float dt) {
-        Direction[] ds = Direction.VONNEUMANN_NEIGHBOURS;
         float temp = state.getTemperature();
         Direction smallestTemp = Direction.Zero;
         float cursmall = Float.POSITIVE_INFINITY;
@@ -13,7 +15,7 @@ public class ElementStateThermo {
         ElementState[] affected = new ElementState[4];
         float[] transfer = new float[4];
         int index = 0;
-        for (Direction d : ds) {
+        for (Direction d : SPREAD_DIRECTIONS) {
             int x = state.x + d.dx;
             int y = state.y + d.dy;
             if (mat.checkBounds(x, y)) {
@@ -26,7 +28,7 @@ public class ElementStateThermo {
                 if (temp - stem > MIN_TEMP_DELTA) {
                     float effectiveLambda = Math.min(state.getHeatTransferCoefficient(),
                             side.getHeatTransferCoefficient());
-                    float local = effectiveLambda * (temp - stem);
+                    float local = HEAT_FLOW_COEFFICIENT * effectiveLambda * (temp - stem);
                     transfer[index] = local * dt;
                     transferHeatSum += transfer[index];
                     affected[index] = side;
