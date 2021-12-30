@@ -15,9 +15,6 @@ public abstract class Element {
     protected IColorDef colorDef = IColorDef.NONE;
     
     public void update(ElementState state, ElementMatrix mat, int frame) {
-        if (state.alreadyUpdated(frame)) {
-            return;
-        }
         if (state.isFixed()) {
             ElementStateThermo.apply(state, mat, frame);
         } else {

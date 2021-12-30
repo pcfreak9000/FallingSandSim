@@ -42,13 +42,20 @@ public class ElementState {
         return acceleration;
     }
     
-    public boolean alreadyUpdated(int currentframe) {
+    private boolean alreadyUpdated(int currentframe) {
         int old = lastframe;
         lastframe = currentframe;
         return old == currentframe;
     }
     
-    public void update(ElementMatrix matrix, int frame) {
+    public void updateChecked(ElementMatrix matrix, int frame) {
+        if (alreadyUpdated(frame)) {
+            return;
+        }
+        updateRaw(matrix, frame);
+    }
+    
+    protected void updateRaw(ElementMatrix matrix, int frame) {
         this.element.update(this, matrix, frame);
     }
     

@@ -45,17 +45,12 @@ public class ElementMatrix {
     }
     
     public void update() {
-        for (int i : xs) {
-            for (int j : ys) {
+        frame++;
+        for (int j : ys) {
+            for (int i : xs) {
                 chunks[i][j].update(this, frame);
             }
         }
-        //        for (int i = 0; i < chunks.length; i++) {
-        //            for (int j = 0; j < chunks[i].length; j++) {
-        //                chunks[i][j].update(this, frame);
-        //            }
-        //        }
-        frame++;
     }
     
     public double random() {

@@ -226,8 +226,8 @@ public class ElementStateKinematics {
             float f = v.x * dir.dx + v.y * dir.dy;
             if ((dir.dx == 0 && v.x == 0) || (dir.dy == 0 && v.y == 0)) {
                 if (dir.dy == 0) {
-                    //d = Direction.Down;
-                    d = mat.random() < 0.99 ? Direction.Down : Direction.Up;
+                    d = Direction.Down;
+                    //d = mat.random() < 0.9999 ? Direction.Down : Direction.Up;
                     if (d == Direction.Up) {
                         f *= 0.01f;
                     }

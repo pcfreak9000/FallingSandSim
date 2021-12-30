@@ -1,12 +1,12 @@
 package de.pcfreak9000.pixelsimtest;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.IntStream;
+
+import com.badlogic.gdx.utils.IntArray;
 
 public class Chunk {
     
-    public static final int CHUNK_SIZE = 400;//64;
+    public static final int CHUNK_SIZE = 64;
     private static int[] xShuffled = shuffledIndizes(CHUNK_SIZE);
     private static int[] yShuffled = shuffledIndizes(CHUNK_SIZE);
     
@@ -15,9 +15,9 @@ public class Chunk {
     }
     
     public static int[] shuffledIndizes(int len) {
-        int[] array = IntStream.range(0, len).toArray();
-        Collections.shuffle(Arrays.asList(array));
-        return array;
+        IntArray ob = new IntArray(IntStream.range(0, len).toArray());
+        ob.shuffle();
+        return ob.items;
     }
     
     private ElementState[][] matrix = new ElementState[CHUNK_SIZE][CHUNK_SIZE];
@@ -33,7 +33,7 @@ public class Chunk {
             for (int y : yShuffled) {
                 ElementState t = matrix[x][y];
                 if (t != null) {
-                    t.update(mat, frame);
+                    t.updateChecked(mat, frame);
                 }
             }
         }
