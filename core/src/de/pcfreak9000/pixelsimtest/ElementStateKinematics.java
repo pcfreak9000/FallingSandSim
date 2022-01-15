@@ -2,7 +2,6 @@ package de.pcfreak9000.pixelsimtest;
 
 import java.util.Objects;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
@@ -34,12 +33,11 @@ public class ElementStateKinematics {
     
     //private static final ComponentMapper<MovementComponent> MM = new ComponentMapper<>(MovementComponent.class);
     
-    public static void apply(ElementState state, ElementMatrix mat) {
-        float dt = Gdx.graphics.getDeltaTime();
+    public static void apply(ElementState state, ElementMatrix mat, float dt) {
         ElementStateThermo.produceHeat(state, mat, dt);
         Vector2 vel = state.getVelocity();
         Vector2 acl = state.getAcceleration();
-        float g = 40;
+        float g = 100;
         acl.add(0, -g);
         if (!state.isFluidLike()) {//acceleration fluid threshold maybe? at higher accelerations, things behave like a fluid? i.e. cant hold themselfes together?
             for (Direction d : Direction.VONNEUMANN_NEIGHBOURS) {//or bring in some random x-errors?

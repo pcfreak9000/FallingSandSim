@@ -1,5 +1,7 @@
 package de.pcfreak9000.pixelsimtest;
 
+import com.badlogic.gdx.Gdx;
+
 public abstract class Element {
     
     protected float density = 1;
@@ -15,10 +17,11 @@ public abstract class Element {
     protected IColorDef colorDef = IColorDef.NONE;
     
     public void update(ElementState state, ElementMatrix mat, int frame) {
+        float dt = Gdx.graphics.getDeltaTime();
         if (state.isFixed()) {
-            ElementStateThermo.apply(state, mat, frame);
+            ElementStateThermo.apply(state, mat, dt);
         } else {
-            ElementStateKinematics.apply(state, mat);
+            ElementStateKinematics.apply(state, mat, dt);//includes thermo stuff
         }
     }
     

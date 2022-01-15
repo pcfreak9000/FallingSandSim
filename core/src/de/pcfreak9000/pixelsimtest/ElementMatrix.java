@@ -18,7 +18,7 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
-    public static final int SIZE = 300;
+    public static final int SIZE = 500;
     
     private static final int[] xs = Chunk.shuffledIndizes(Chunk.toChunk(SIZE) + 1);
     private static final int[] ys = Chunk.shuffledIndizes(Chunk.toChunk(SIZE) + 1);
