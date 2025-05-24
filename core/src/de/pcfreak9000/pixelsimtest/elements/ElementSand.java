@@ -9,7 +9,7 @@ public class ElementSand extends Element {
     
     public ElementSand() {
         this.colorDef = IColorDef.cnst(Color.YELLOW);
-        this.density = 50;
+        this.density = 50.0f;
         this.friction = 0.9f;
         this.frictionInternal = 0.9f;
         this.heatProduction = 10;

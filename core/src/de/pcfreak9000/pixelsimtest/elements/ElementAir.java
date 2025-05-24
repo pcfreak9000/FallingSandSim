@@ -9,7 +9,7 @@ public class ElementAir extends Element {
     public ElementAir() {
         this.colorDef = IColorDef.cnst(Color.GREEN);
         this.fluidLike = true;
-        this.density = 1;
+        this.density = 0.4f;
         this.friction = 0.01f;
         this.heatTransferCoefficient = 1000;
         this.specificHeat = 0.1f;

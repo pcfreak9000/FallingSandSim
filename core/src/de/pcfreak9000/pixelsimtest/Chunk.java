@@ -29,6 +29,8 @@ public class Chunk {
     }
     
     void update(ElementMatrix mat, int frame) {
+    	xShuffled = shuffledIndizes(CHUNK_SIZE);
+    	yShuffled = shuffledIndizes(CHUNK_SIZE);
         for (int x : xShuffled) {
             for (int y : yShuffled) {
                 ElementState t = matrix[x][y];

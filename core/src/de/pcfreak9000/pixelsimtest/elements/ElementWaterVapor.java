@@ -25,6 +25,8 @@ public class ElementWaterVapor extends Element {
         if (state.getTemperature() < 100) {
             state = mat.convertState(state.getX(), state.getY(), PixelSimTest.water);
             //state.heat += 5 / state.specificheat;
+        } else if (state.getTemperature() > 500) {
+        	state = mat.convertState(state.getX(), state.getY(), PixelSimTest.plasma);
         }
     }
     

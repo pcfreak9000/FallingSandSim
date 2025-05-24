@@ -13,13 +13,13 @@ public class ElementState {
     //can the color system be improved? a Color object however seems to be too much
     private float colorPacked;
     
-    //Do v and a need to be vectors?
-    private Vector2 velocity;
-    private Vector2 acceleration;
-    
     private float heat;
     
     protected int lastframe = 0;
+    
+    
+    public Direction mov=Direction.Down;
+    public boolean enabled=true;
     
     protected float timepart;
     int x, y;
@@ -30,17 +30,8 @@ public class ElementState {
         this.element = element;
         Color color = element.getColorDef().getColor(x, y);
         this.colorPacked = color == null ? Float.NaN : color.toFloatBits();
-        this.velocity = new Vector2();
-        this.acceleration = new Vector2();
     }
-    
-    public Vector2 getVelocity() {
-        return velocity;
-    }
-    
-    public Vector2 getAcceleration() {
-        return acceleration;
-    }
+
     
     private boolean alreadyUpdated(int currentframe) {
         int old = lastframe;

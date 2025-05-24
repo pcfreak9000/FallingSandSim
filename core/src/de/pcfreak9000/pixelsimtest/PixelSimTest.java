@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import de.pcfreak9000.pixelsimtest.elements.ElementAir;
+import de.pcfreak9000.pixelsimtest.elements.ElementPlasma;
 import de.pcfreak9000.pixelsimtest.elements.ElementSand;
 import de.pcfreak9000.pixelsimtest.elements.ElementStone;
 import de.pcfreak9000.pixelsimtest.elements.ElementWater;
@@ -26,10 +27,10 @@ public class PixelSimTest extends ApplicationAdapter {
     
     private Element air;
     private Element stone;
-    public static Element water;
+    public static Element water,plasma;
     private Element sand;
     public static Element watervapor;
-    private Element[] elements = new Element[5];
+    private Element[] elements = new Element[6];
     
     @Override
     public void create() {
@@ -42,7 +43,7 @@ public class PixelSimTest extends ApplicationAdapter {
         //        mat.createCircle(0, 99, 20, gravel);
         
         //mat.createCircle(50, 50, 30, stone);
-        for (int i = 0; i < 110; i++) {
+        for (int i = 0; i < 10; i++) {
             mat.createState(i + 20, 50, stone);
         }
         for (int i = 0; i < ElementMatrix.SIZE; i++) {
@@ -61,6 +62,8 @@ public class PixelSimTest extends ApplicationAdapter {
         elements[3] = sand;
         watervapor = new ElementWaterVapor();
         elements[4] = watervapor;
+        plasma = new ElementPlasma();
+        elements[5] = plasma;
     }
     
     private static class Spout {
@@ -91,12 +94,12 @@ public class PixelSimTest extends ApplicationAdapter {
             int ax = (int) Math.floor(vec.x);
             int ay = (int) Math.floor(vec.y);
             if (!Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-                mat.createCircle(ax, ay, 15, current);
+                mat.createCircle(ax, ay, 1, current);
             } else {
                 Spout s = new Spout();
                 s.x = ax;
                 s.y = ay;
-                s.rad = 3;
+                s.rad = 1;
                 s.element = current;
                 spouts.add(s);
             }
