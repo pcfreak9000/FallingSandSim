@@ -144,6 +144,8 @@ public class PixelSimTest extends ApplicationAdapter {
     
     @Override
     public void dispose() {
+        Gdx.gl.glDepthMask(false);//not doing this causes a SIGBUS on glfw window destruction
         batch.dispose();
+        ElementMatrix.dispose();
     }
 }

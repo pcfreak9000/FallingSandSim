@@ -18,6 +18,10 @@ public class ElementMatrix {
     }
     private static final Texture WHITE;
     
+    public static void dispose() {
+        WHITE.dispose();
+    }
+    
     public static final int SIZE = 500;
     
     private static final int[] xs = Chunk.shuffledIndizes(Chunk.toChunk(SIZE) + 1);
