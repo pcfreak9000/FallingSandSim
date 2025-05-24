@@ -16,16 +16,25 @@ public class ElementStateKinematics {
 	// inelastic bounces?
 	// clean up
 
-	static float t;
-
 	public static void apply(ElementState state, ElementMatrix mat, float dt) {
 		ElementStateThermo.produceHeat(state, mat, dt);
 		int x = state.getX();
 		int y = state.getY();
-		if (state.isFluidLike()) {
-			water(x, y, state, mat);
-		} else {
-			sand(x, y, state, mat);
+//		if (state.isFluidLike()) {
+//			water(x, y, state, mat);
+//		} else {
+//			sand(x, y, state, mat);
+//		}
+		state.acc.y = -9.81f;
+		state.vel.mulAdd(state.acc, dt);
+		float dx = dt * state.vel.x + state.fract.x;
+		float dy = dt * state.vel.y + state.fract.y;
+		int idx = (int) dx;
+		int idy = (int) dy;
+		state.fract.x = idx == 0 ? dx : 0;
+		state.fract.y = idy == 0 ? dy : 0;
+		if (idx != 0 || idy != 0) {
+			move(x, y, x + idx, y + idy, mat);
 		}
 		ElementStateThermo.spreadHeat(state, mat, dt);
 	}
@@ -35,7 +44,7 @@ public class ElementStateKinematics {
 		int dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 		int err = dx + dy, e2;
 		int ox, oy;
-		while (x0 != x1 && y0 != y1) {
+		while (x0 != x1 || y0 != y1) {
 			e2 = 2 * err;
 			ox = x0;
 			oy = y0;
@@ -47,11 +56,12 @@ public class ElementStateKinematics {
 				err += dx;
 				y0 += sy;
 			}
+			if (ox != x0 && oy != y0) {
+				// diagonal movement...
+			}
 			if (canSwitch(mat.getState(ox, oy), mat.getState(x0, y0), mat)) {
 				mat.switchStates(ox, oy, x0, y0);
-			} else {
-				break;
-			}
+			} 
 		}
 	}
 
